@@ -213,43 +213,45 @@ const TIPO_BADGE = {
 
 // ── EMAIL GENERATOR (string concat, sin template literals) ──────────────────
 function generarEmails(empresa, cliente, manual) {
+  var N = String.fromCharCode(10);
+  var NN = N + N;
   const emp = empresa.nombre, web = empresa.web, descripcion = empresa.descripcion;
-  const firma = "Equipo " + emp + "\n" + web + " · " + descripcion;
+  const firma = "Equipo " + emp + N + web + " · " + descripcion;
   if (!cliente) {
     const nom = manual.nombre, prods = manual.productos;
     return [
       { subject:"Sus productos en " + emp + " están esperando, " + nom,
-        body:"Estimado/a " + nom + ",\n\nLe escribimos desde " + emp + " para informarle que los productos que seleccionó aún están reservados en su carrito:\n\n" + prods + "\n\nPuede retomar su pedido en cualquier momento en " + web + ".\n\nSaludos cordiales,\n" + firma },
+        body:"Estimado/a " + nom + "," + NN + "Le escribimos desde " + emp + " para informarle que los productos que seleccionó aún están reservados en su carrito:" + NN + prods + NN + "Puede retomar su pedido en cualquier momento en " + web + "." + NN + "Saludos cordiales," + N + firma },
       { subject:"Recordatorio: su pedido en " + emp + " sigue disponible",
-        body:"Estimado/a " + nom + ",\n\nHan pasado 24 horas y su pedido aún está pendiente:\n\n" + prods + "\n\nSi tiene alguna consulta, nuestro equipo está disponible.\n\nSaludos cordiales,\n" + firma },
+        body:"Estimado/a " + nom + "," + NN + "Han pasado 24 horas y su pedido aún está pendiente:" + NN + prods + NN + "Si tiene alguna consulta, nuestro equipo está disponible." + NN + "Saludos cordiales," + N + firma },
       { subject:"Último aviso: su carrito en " + emp + " está por vencer",
-        body:"Estimado/a " + nom + ",\n\nSu carrito está próximo a expirar:\n\n" + prods + "\n\nComo gesto de bienvenida, le ofrecemos envío sin cargo si completa su pedido en las próximas 24 horas.\n\nSaludos cordiales,\n" + firma },
+        body:"Estimado/a " + nom + "," + NN + "Su carrito está próximo a expirar:" + NN + prods + NN + "Como gesto de bienvenida, le ofrecemos envío sin cargo si completa su pedido en las próximas 24 horas." + NN + "Saludos cordiales," + N + firma },
     ];
   }
   const { nombre, rubro, zona, tipo, pedidos } = cliente;
   if (tipo === "frecuente") return [
     { subject: nombre + ", dejaste productos en tu carrito de " + emp,
-      body: "Estimado/a equipo de " + nombre + ",\n\nNotamos que dejaron productos sin confirmar en " + emp + ". Con " + pedidos + " pedidos realizados, son uno de nuestros clientes más activos en " + zona + " y queremos asegurarnos de que este pedido se concrete.\n\nSu carrito sigue reservado en " + web + ".\n\nSaludos cordiales,\n" + firma },
+      body: "Estimado/a equipo de " + nombre + "," + NN + "Notamos que dejaron productos sin confirmar en " + emp + ". Con " + pedidos + " pedidos realizados, son uno de nuestros clientes más activos en " + zona + " y queremos asegurarnos de que este pedido se concrete." + NN + "Su carrito sigue reservado en " + web + "." + NN + "Saludos cordiales," + N + firma },
     { subject: "Seguimiento: pedido pendiente de " + nombre,
-      body: "Estimado/a equipo de " + nombre + ",\n\nHan pasado 24 horas desde que reservaron su último pedido. Si necesitan asistencia para coordinar entrega en " + zona + " o ajustar cantidades, estamos disponibles de inmediato.\n\nSaludos cordiales,\n" + firma },
+      body: "Estimado/a equipo de " + nombre + "," + NN + "Han pasado 24 horas desde que reservaron su último pedido. Si necesitan asistencia para coordinar entrega en " + zona + " o ajustar cantidades, estamos disponibles de inmediato." + NN + "Saludos cordiales," + N + firma },
     { subject: "Último aviso para " + nombre + " — carrito por vencer",
-      body: "Estimado/a equipo de " + nombre + ",\n\nSu carrito en " + emp + " está a punto de expirar. Como reconocimiento a su fidelidad con " + pedidos + " pedidos, les ofrecemos envío prioritario sin cargo si completan en las próximas 24 horas.\n\nSaludos cordiales,\n" + firma },
+      body: "Estimado/a equipo de " + nombre + "," + NN + "Su carrito en " + emp + " está a punto de expirar. Como reconocimiento a su fidelidad con " + pedidos + " pedidos, les ofrecemos envío prioritario sin cargo si completan en las próximas 24 horas." + NN + "Saludos cordiales," + N + firma },
   ];
   if (tipo === "potencial") return [
     { subject: nombre + ", sus productos en " + emp + " están esperando",
-      body: "Estimado/a equipo de " + nombre + ",\n\nLe escribimos desde " + emp + " para informarle que los productos seleccionados aún están disponibles. Nos especializamos en " + descripcion + ", ideal para negocios de " + rubro + " en " + zona + ".\n\nSi tienen consultas antes de confirmar, estamos disponibles sin compromiso.\n\nSaludos cordiales,\n" + firma },
+      body: "Estimado/a equipo de " + nombre + "," + NN + "Le escribimos desde " + emp + " para informarle que los productos seleccionados aún están disponibles. Nos especializamos en " + descripcion + ", ideal para negocios de " + rubro + " en " + zona + "." + NN + "Si tienen consultas antes de confirmar, estamos disponibles sin compromiso." + NN + "Saludos cordiales," + N + firma },
     { subject: "¿Podemos ayudarles a completar su pedido, " + nombre + "?",
-      body: "Estimado/a equipo de " + nombre + ",\n\nNotamos que aún no finalizaron su pedido. Muchos negocios de " + rubro + " nos consultan sobre cantidades y tiempos de entrega en " + zona + ". Nos adaptamos a lo que necesitan.\n\nSaludos cordiales,\n" + firma },
+      body: "Estimado/a equipo de " + nombre + "," + NN + "Notamos que aún no finalizaron su pedido. Muchos negocios de " + rubro + " nos consultan sobre cantidades y tiempos de entrega en " + zona + ". Nos adaptamos a lo que necesitan." + NN + "Saludos cordiales," + N + firma },
     { subject: "Último llamado — y un beneficio para " + nombre,
-      body: "Estimado/a equipo de " + nombre + ",\n\nSu carrito en " + emp + " está próximo a vencer. Para facilitar este primer pedido, les ofrecemos envío sin cargo si lo completan en las próximas 24 horas.\n\nSaludos cordiales,\n" + firma },
+      body: "Estimado/a equipo de " + nombre + "," + NN + "Su carrito en " + emp + " está próximo a vencer. Para facilitar este primer pedido, les ofrecemos envío sin cargo si lo completan en las próximas 24 horas." + NN + "Saludos cordiales," + N + firma },
   ];
   return [
     { subject: nombre + ", hay productos en " + emp + " esperándoles",
-      body: "Estimado/a equipo de " + nombre + ",\n\nNotamos un pedido sin confirmar en " + emp + ". Como cliente activo del rubro " + rubro + " en " + zona + ", ya conocen nuestros productos. Su carrito sigue reservado en " + web + ".\n\nSaludos cordiales,\n" + firma },
+      body: "Estimado/a equipo de " + nombre + "," + NN + "Notamos un pedido sin confirmar en " + emp + ". Como cliente activo del rubro " + rubro + " en " + zona + ", ya conocen nuestros productos. Su carrito sigue reservado en " + web + "." + NN + "Saludos cordiales," + N + firma },
     { subject: "Recordatorio " + emp + " para " + nombre + " — 24 horas",
-      body: "Estimado/a equipo de " + nombre + ",\n\nHan pasado 24 horas desde que reservaron su pedido. Si surgió alguna duda sobre productos o logística en " + zona + ", nuestro equipo puede orientarles.\n\nSaludos cordiales,\n" + firma },
+      body: "Estimado/a equipo de " + nombre + "," + NN + "Han pasado 24 horas desde que reservaron su pedido. Si surgió alguna duda sobre productos o logística en " + zona + ", nuestro equipo puede orientarles." + NN + "Saludos cordiales," + N + firma },
     { subject: "Última oportunidad — carrito por vencer en " + emp,
-      body: "Estimado/a equipo de " + nombre + ",\n\nSu carrito en " + emp + " está a punto de expirar. Les ofrecemos envío sin cargo si completan en las próximas 24 horas.\n\nSaludos cordiales,\n" + firma },
+      body: "Estimado/a equipo de " + nombre + "," + NN + "Su carrito en " + emp + " está a punto de expirar. Les ofrecemos envío sin cargo si completan en las próximas 24 horas." + NN + "Saludos cordiales," + N + firma },
   ];
 }
 
@@ -863,3 +865,4 @@ app.listen(PORT, () => {
 `);
   processQueue(); // revisar al arranque
 });
+
