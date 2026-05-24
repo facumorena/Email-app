@@ -251,6 +251,7 @@ function AppPrincipal({ empresa, onLogout, onActualizarClientes }) {
   const [progErr, setProgErr] = useState("");
   const [progLoad, setProgLoad] = useState(false);
   const [cola, setCola] = useState(null);
+  const [resultados, setResultados] = useState(null);
   const [dbTab, setDbTab] = useState("lista");
   const [csvTxt, setCsvTxt] = useState("");
   const [csvErr, setCsvErr] = useState("");
@@ -265,8 +266,8 @@ function AppPrincipal({ empresa, onLogout, onActualizarClientes }) {
   const [cOk, setCOk] = useState("");
 
   useEffect(() => {
-    if (vista !== "cola") return;
-    const load = () => fetch("/api/dashboard").then(r=>r.json()).then(setCola).catch(()=>{});
+    if (vista !== "cola" && vista !== "resultados") return;
+    const load = () => fetch("/api/dashboard").then(r=>r.json()).then(d=>{ setCola(d); setResultados(d); }).catch(()=>{});
     load();
     const t = setInterval(load, 15000);
     return () => clearInterval(t);
@@ -355,7 +356,7 @@ function AppPrincipal({ empresa, onLogout, onActualizarClientes }) {
             <div style={{color:"rgba(255,255,255,.45)",fontSize:9,letterSpacing:".12em",textTransform:"uppercase"}}>{empresa.web}</div>
           </div>
         </div>
-        {[{k:"generar",label:"✉️ Emails"},{k:"clientes",label:"👥 Clientes"},{k:"basedatos",label:"📂 Base de datos"},{k:"cola",label:"📊 Cola"}].map(({k,label})=>(
+        {[{k:"generar",label:"✉️ Emails"},{k:"clientes",label:"👥 Clientes"},{k:"basedatos",label:"📂 Base de datos"},{k:"cola",label:"📊 Cola"},{k:"resultados",label:"💰 Resultados"}].map(({k,label})=>(
           <button key={k} onClick={()=>setVista(k)} style={{background:"none",border:"none",color:vista===k?"#fff":"rgba(255,255,255,.5)",fontSize:12,padding:"0 13px",borderBottom:vista===k?"2px solid "+C.secundario:"2px solid transparent",fontFamily:"Georgia,serif",transition:"all .2s"}}>{label}</button>
         ))}
         <div style={{flex:1}}/>
@@ -490,6 +491,91 @@ function AppPrincipal({ empresa, onLogout, onActualizarClientes }) {
                 }
               </>
             ) : <div style={{padding:40,textAlign:"center",color:"#9ca3af"}}>Cargando cola...</div>}
+          </div>
+        )}
+
+        {vista==="resultados" && (
+          <div style={{animation:"fi .3s"}}>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:20}}>
+              <div style={{fontSize:16,fontWeight:"bold",color:C.primario}}>💰 Resultados de recuperación</div>
+              <button onClick={()=>fetch("/api/dashboard").then(r=>r.json()).then(d=>{setCola(d);setResultados(d);})} style={{background:C.primario,color:"#fff",border:"none",padding:"7px 16px",fontSize:11,letterSpacing:".12em",textTransform:"uppercase"}}>Actualizar</button>
+            </div>
+            {resultados ? (()=>{
+              const s = resultados.stats;
+              const tasa = s.total > 0 ? Math.round((s.recovered/s.total)*100) : 0;
+              const maxMonto = resultados.byMonth?.length ? Math.max(...resultados.byMonth.map(m=>m.monto||0), 1) : 1;
+              return (
+                <>
+                  {/* KPIs principales */}
+                  <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:10,marginBottom:24}}>
+                    {[
+                      {label:"Carritos registrados", val:s.total, color:C.primario, icon:"🛒"},
+                      {label:"Ventas recuperadas",   val:s.recovered||0, color:"#166534", icon:"✅"},
+                      {label:"Tasa de recuperación", val:tasa+"%", color:"#1e40af", icon:"📈"},
+                      {label:"Ingresos recuperados", val:"$"+(s.revenue_recovered||0).toLocaleString("es-UY"), color:"#92400e", icon:"💵"},
+                    ].map(k=>(
+                      <div key={k.label} style={{background:"#fff",border:"1px solid "+C.medio,padding:"16px 14px",textAlign:"center"}}>
+                        <div style={{fontSize:22,marginBottom:4}}>{k.icon}</div>
+                        <div style={{fontSize:22,fontWeight:"bold",color:k.color}}>{k.val}</div>
+                        <div style={{fontSize:10,color:"#6b7280",marginTop:3,textTransform:"uppercase",letterSpacing:".06em"}}>{k.label}</div>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Gráfico por mes */}
+                  {resultados.byMonth?.length > 0 && (
+                    <div style={{background:"#fff",border:"1px solid "+C.medio,padding:"20px 24px",marginBottom:20}}>
+                      <div style={{fontSize:13,fontWeight:"bold",color:C.primario,marginBottom:16}}>Ventas recuperadas por mes</div>
+                      <div style={{display:"flex",alignItems:"flex-end",gap:12,height:120}}>
+                        {[...resultados.byMonth].reverse().map((m,i)=>(
+                          <div key={i} style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",gap:4}}>
+                            <div style={{fontSize:11,color:C.primario,fontWeight:"bold"}}>${(m.monto||0).toLocaleString("es-UY")}</div>
+                            <div style={{width:"100%",background:C.secundario,height:Math.max(8,Math.round((m.monto/maxMonto)*90)),borderRadius:"3px 3px 0 0",minHeight:8}}/>
+                            <div style={{fontSize:10,color:"#6b7280"}}>{m.mes}</div>
+                            <div style={{fontSize:10,color:"#9ca3af"}}>{m.ventas} venta{m.ventas!==1?"s":""}</div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Tabla de ventas recuperadas */}
+                  <div style={{background:"#fff",border:"1px solid "+C.medio}}>
+                    <div style={{padding:"12px 16px",background:C.primario,color:"#fff",fontSize:11,fontWeight:"bold",textTransform:"uppercase",letterSpacing:".1em"}}>
+                      Historial de ventas recuperadas
+                    </div>
+                    {(resultados.queue||[]).filter(r=>r.recovered).length === 0
+                      ? <div style={{padding:40,textAlign:"center",color:"#9ca3af",fontSize:14}}>
+                          Aún no hay ventas recuperadas.<br/>
+                          <span style={{fontSize:12,marginTop:8,display:"block"}}>Cuando un cliente complete una compra después de recibir un email, aparecerá acá.</span>
+                        </div>
+                      : <div style={{maxHeight:360,overflowY:"auto"}}>
+                          <div style={{display:"grid",gridTemplateColumns:"2fr 1.4fr 1fr 90px",padding:"9px 16px",background:"#f9fafb",fontSize:10,textTransform:"uppercase",letterSpacing:".1em",color:"#6b7280",borderBottom:"1px solid "+C.fondo}}>
+                            <span>Cliente</span><span>Empresa</span><span>Fecha</span><span style={{textAlign:"right"}}>Monto</span>
+                          </div>
+                          {(resultados.queue||[]).filter(r=>r.recovered).map((r,i)=>(
+                            <div key={r.id} style={{display:"grid",gridTemplateColumns:"2fr 1.4fr 1fr 90px",padding:"11px 16px",borderTop:i>0?"1px solid "+C.fondo:"none",alignItems:"center"}}>
+                              <div>
+                                <div style={{fontSize:13,color:"#111",fontWeight:"bold"}}>{r.client_name}</div>
+                                <div style={{fontSize:11,color:"#9ca3af"}}>{r.client_email}</div>
+                              </div>
+                              <div style={{fontSize:12,color:"#4b5563"}}>{r.company_nombre}</div>
+                              <div style={{fontSize:11,color:"#6b7280"}}>{r.recovered_at ? new Date(r.recovered_at*1000).toLocaleDateString("es-UY") : "—"}</div>
+                              <div style={{fontSize:13,fontWeight:"bold",color:"#166534",textAlign:"right"}}>${(r.order_value||0).toLocaleString("es-UY")}</div>
+                            </div>
+                          ))}
+                        </div>
+                    }
+                  </div>
+
+                  {/* Cómo se trackea */}
+                  <div style={{marginTop:16,padding:"14px 16px",background:"rgba(0,0,0,.03)",border:"1px solid "+C.medio,fontSize:12,color:"#6b7280",lineHeight:1.8}}>
+                    <strong style={{color:C.primario}}>¿Cómo se detecta una venta recuperada?</strong><br/>
+                    Cuando un cliente completa la compra en la tienda, esta envía un webhook a <code style={{background:"#f1f5f9",padding:"1px 5px",fontSize:11}}>/api/cart-completed</code> con el email y el monto. El servidor verifica que ese cliente haya recibido al menos un email de recuperación, y si es así, cuenta la venta como recuperada por Email Recovery.
+                  </div>
+                </>
+              );
+            })() : <div style={{padding:40,textAlign:"center",color:"#9ca3af"}}>Cargando...</div>}
           </div>
         )}
 

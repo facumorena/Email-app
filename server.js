@@ -36,26 +36,33 @@ db.exec(`
     email_2_at     INTEGER,
     email_3_at     INTEGER,
     error_log      TEXT    DEFAULT '',
-    created_at     INTEGER DEFAULT (strftime('%s','now'))
+    created_at     INTEGER DEFAULT (strftime('%s','now')),
+    order_value    REAL    DEFAULT 0,
+    recovered_at   INTEGER,
+    recovered      INTEGER DEFAULT 0
   )
 `);
+// Migración segura para bases de datos existentes
+["order_value REAL DEFAULT 0","recovered_at INTEGER","recovered INTEGER DEFAULT 0"].forEach(col => {
+  try { db.exec("ALTER TABLE email_queue ADD COLUMN " + col); } catch(e) {}
+});
 
-// ── TEMPLATES (server-side, sin template literals para evitar conflictos) ─────
+// ── TEMPLATES ────────────────────────────────────────────────────────────────
 function buildEmails(emp, web, desc, nombre, rubro, zona, tipo, pedidos, products) {
   const firma = "Equipo " + emp + "\n" + web + " · " + desc;
   const prod  = products ? "\nProductos en carrito:\n" + products + "\n" : "";
   if (tipo === "frecuente") return [
     { subject: nombre + ", dejaste productos en tu carrito de " + emp,
-      body: "Estimado/a equipo de " + nombre + ",\n\nNotamos que dejaron productos sin confirmar en " + emp + ". Con " + pedidos + " pedidos realizados, son uno de nuestros clientes más activos en " + zona + " y queremos asegurarnos de que este pedido se concrete.\n" + prod + "\nSu carrito sigue reservado en " + web + ".\n\nSaludos cordiales,\n" + firma },
+      body: "Estimado/a equipo de " + nombre + ",\n\nNotamos que dejaron productos sin confirmar en " + emp + ". Con " + pedidos + " pedidos realizados, son uno de nuestros clientes más activos en " + zona + ".\n" + prod + "\nSu carrito sigue reservado en " + web + ".\n\nSaludos cordiales,\n" + firma },
     { subject: "Seguimiento: pedido pendiente de " + nombre,
-      body: "Estimado/a equipo de " + nombre + ",\n\nHan pasado 24 horas desde que reservaron su último pedido. Si necesitan asistencia para coordinar entrega en " + zona + " o ajustar cantidades, estamos disponibles de inmediato.\n" + prod + "\nSaludos cordiales,\n" + firma },
+      body: "Estimado/a equipo de " + nombre + ",\n\nHan pasado 24 horas desde que reservaron su último pedido. Si necesitan asistencia para coordinar entrega en " + zona + " o ajustar cantidades, estamos disponibles.\n" + prod + "\nSaludos cordiales,\n" + firma },
     { subject: "Último aviso para " + nombre + " — carrito por vencer",
       body: "Estimado/a equipo de " + nombre + ",\n\nSu carrito en " + emp + " está a punto de expirar. Como reconocimiento a su fidelidad con " + pedidos + " pedidos, les ofrecemos envío prioritario sin cargo si completan en las próximas 24 horas.\n" + prod + "\nSaludos cordiales,\n" + firma },
   ];
   if (tipo === "potencial") return [
     { subject: nombre + ", sus productos en " + emp + " están esperando",
       body: "Estimado/a equipo de " + nombre + ",\n\nLe escribimos desde " + emp + " para informarle que los productos seleccionados aún están disponibles. Nos especializamos en " + desc + ", ideal para negocios de " + rubro + " en " + zona + ".\n" + prod + "\nSi tienen consultas antes de confirmar, estamos disponibles sin compromiso.\n\nSaludos cordiales,\n" + firma },
-    { subject: "¿Podemos ayudarles a completar su pedido, " + nombre + "?",
+    { subject: "Podemos ayudarles a completar su pedido, " + nombre,
       body: "Estimado/a equipo de " + nombre + ",\n\nNotamos que aún no finalizaron su pedido. Muchos negocios de " + rubro + " nos consultan sobre cantidades y tiempos de entrega en " + zona + ". Nos adaptamos a lo que necesitan.\n" + prod + "\nSaludos cordiales,\n" + firma },
     { subject: "Último llamado — y un beneficio para " + nombre,
       body: "Estimado/a equipo de " + nombre + ",\n\nSu carrito en " + emp + " está próximo a vencer. Para facilitar este primer pedido, les ofrecemos envío sin cargo si lo completan en las próximas 24 horas.\n" + prod + "\nSaludos cordiales,\n" + firma },
@@ -88,7 +95,7 @@ const DELAYS = { e1: 3600, e2: 86400, e3: 259200 };
 async function processQueue() {
   const now = Math.floor(Date.now() / 1000);
   const rows = db.prepare(
-    "SELECT * FROM email_queue WHERE (email_1_sent=0 AND ?>=abandoned_at+?) OR (email_2_sent=0 AND ?>=abandoned_at+?) OR (email_3_sent=0 AND ?>=abandoned_at+?)"
+    "SELECT * FROM email_queue WHERE recovered=0 AND ((email_1_sent=0 AND ?>=abandoned_at+?) OR (email_2_sent=0 AND ?>=abandoned_at+?) OR (email_3_sent=0 AND ?>=abandoned_at+?))"
   ).all(now, DELAYS.e1, now, DELAYS.e2, now, DELAYS.e3);
   for (const r of rows) {
     const emails = buildEmails(r.company_nombre, r.company_web, r.company_desc, r.client_name, r.client_rubro, r.client_zona, r.client_type, r.client_orders, r.products);
@@ -100,7 +107,7 @@ async function processQueue() {
           console.log("✓ Email " + (i+1) + " → " + r.client_name + " <" + r.client_email + ">");
         } catch(e) {
           db.prepare("UPDATE email_queue SET error_log=? WHERE id=?").run(e.message, r.id);
-          console.error("✗ Email " + (i+1) + " error (" + r.client_email + "): " + e.message);
+          console.error("✗ Error (" + r.client_email + "): " + e.message);
         }
       }
     }
@@ -111,34 +118,61 @@ cron.schedule("* * * * *", processQueue);
 // ── API ───────────────────────────────────────────────────────────────────────
 app.post("/api/cart-abandoned", (req, res) => {
   const { client_name, client_email, client_type="activo", client_orders=1,
-          client_zona="", client_rubro="", products="",
+          client_zona="", client_rubro="", products="", order_value=0,
           company_nombre, company_web, company_desc="" } = req.body;
   if (!client_name || !client_email || !company_nombre || !company_web)
     return res.status(400).json({ error: "Faltan campos: client_name, client_email, company_nombre, company_web" });
   const abandoned_at = Math.floor(Date.now() / 1000);
-  const r = db.prepare("INSERT INTO email_queue (client_name,client_email,client_type,client_orders,client_zona,client_rubro,products,company_nombre,company_web,company_desc,abandoned_at) VALUES (?,?,?,?,?,?,?,?,?,?,?)").run(client_name,client_email,client_type,client_orders,client_zona,client_rubro,products,company_nombre,company_web,company_desc,abandoned_at);
+  const r = db.prepare("INSERT INTO email_queue (client_name,client_email,client_type,client_orders,client_zona,client_rubro,products,order_value,company_nombre,company_web,company_desc,abandoned_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)").run(client_name,client_email,client_type,client_orders,client_zona,client_rubro,products,order_value,company_nombre,company_web,company_desc,abandoned_at);
   const fmt = (s) => new Date(s*1000).toLocaleString("es-UY",{timeZone:"America/Montevideo",day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"});
-  console.log("\n📦 Registrado: " + client_name + " <" + client_email + "> ID:" + r.lastInsertRowid);
+  console.log("\n📦 Registrado: " + client_name + " <" + client_email + "> $" + order_value);
   res.json({ ok:true, id:r.lastInsertRowid, schedule:{ email_1:fmt(abandoned_at+DELAYS.e1), email_2:fmt(abandoned_at+DELAYS.e2), email_3:fmt(abandoned_at+DELAYS.e3) }});
 });
 
+// Marcar carrito como completado (venta recuperada)
 app.post("/api/cart-completed", (req, res) => {
-  const { client_email, company_nombre } = req.body;
+  const { client_email, company_nombre, order_value=0 } = req.body;
   if (!client_email) return res.status(400).json({ error: "Se requiere client_email" });
-  const r = company_nombre
-    ? db.prepare("UPDATE email_queue SET email_1_sent=1,email_2_sent=1,email_3_sent=1 WHERE client_email=? AND company_nombre=? AND email_3_sent=0").run(client_email, company_nombre)
-    : db.prepare("UPDATE email_queue SET email_1_sent=1,email_2_sent=1,email_3_sent=1 WHERE client_email=? AND email_3_sent=0").run(client_email);
-  res.json({ ok:true, cancelled:r.changes });
+  const now = Math.floor(Date.now() / 1000);
+  // Solo marcar como recuperado si se envió al menos un email (es decir, vino por nuestro medio)
+  const condition = company_nombre
+    ? "client_email=? AND company_nombre=? AND recovered=0 AND (email_1_sent=1 OR email_2_sent=1 OR email_3_sent=1)"
+    : "client_email=? AND recovered=0 AND (email_1_sent=1 OR email_2_sent=1 OR email_3_sent=1)";
+  const params = company_nombre ? [now, order_value, client_email, company_nombre] : [now, order_value, client_email];
+  const r = db.prepare("UPDATE email_queue SET recovered=1, recovered_at=?, order_value=?, email_1_sent=1,email_2_sent=1,email_3_sent=1 WHERE " + condition).run(...params);
+  console.log("💰 Recuperado: " + client_email + " $" + order_value + " (" + r.changes + " registro/s)");
+  res.json({ ok:true, recovered: r.changes, order_value });
 });
 
 app.get("/api/dashboard", (_req, res) => {
-  const stats = db.prepare("SELECT COUNT(*) as total, COALESCE(SUM(email_1_sent),0) as e1, COALESCE(SUM(email_2_sent),0) as e2, COALESCE(SUM(email_3_sent),0) as e3 FROM email_queue").get();
+  const stats = db.prepare(`
+    SELECT
+      COUNT(*) as total,
+      COALESCE(SUM(email_1_sent),0) as e1,
+      COALESCE(SUM(email_2_sent),0) as e2,
+      COALESCE(SUM(email_3_sent),0) as e3,
+      COALESCE(SUM(CASE WHEN recovered=1 THEN 1 ELSE 0 END),0) as recovered,
+      COALESCE(SUM(CASE WHEN recovered=1 THEN order_value ELSE 0 END),0) as revenue_recovered,
+      COALESCE(SUM(order_value),0) as revenue_total
+    FROM email_queue
+  `).get();
+
+  // Ventas recuperadas por mes (últimos 6 meses)
+  const byMonth = db.prepare(`
+    SELECT
+      strftime('%Y-%m', datetime(recovered_at, 'unixepoch')) as mes,
+      COUNT(*) as ventas,
+      SUM(order_value) as monto
+    FROM email_queue
+    WHERE recovered=1 AND recovered_at IS NOT NULL
+    GROUP BY mes ORDER BY mes DESC LIMIT 6
+  `).all();
+
   const queue = db.prepare("SELECT * FROM email_queue ORDER BY created_at DESC LIMIT 100").all();
-  res.json({ stats, queue });
+  res.json({ stats, byMonth, queue });
 });
 
 app.get("/api/health", (_req, res) => res.json({ ok:true, gmail: process.env.GMAIL_USER || null }));
-
 
 // ── FRONTEND (archivo estático) ───────────────────────────────────────────────
 app.use(express.static(path.join(__dirname)));
@@ -158,5 +192,5 @@ app.listen(PORT, () => {
     "  Scheduler corriendo cada 60 segundos...",
     ""
   ].join("\n"));
-  processQueue(); // revisar al arranque
+  processQueue();
 });
