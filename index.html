@@ -3,12 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Email Recovery</title>
+<title>Recartify</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
 <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
 <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 </head>
-<body style="margin:0;padding:0">
+<body style="margin:0;padding:0;background:#f1f5f9">
 <div id="root"></div>
 <script type="text/babel">
 const { useState, useEffect } = React;
@@ -65,9 +66,9 @@ const PALETAS = [
 ];
 const EMOJIS = ["🌿","🛍️","🍕","☕","🏪","🎁","🌸","⚡","🏋️","💎","🎨","🚀"];
 const TIPO_BADGE = {
-  frecuente:{ color:"#166534", bg:"#dcfce7" },
-  activo:   { color:"#1e40af", bg:"#dbeafe" },
-  potencial:{ color:"#92400e", bg:"#fef3c7" },
+  frecuente:{ color:"#166534", bg:"#dcfce7", border:"#86efac" },
+  activo:   { color:"#1e40af", bg:"#dbeafe", border:"#93c5fd" },
+  potencial:{ color:"#92400e", bg:"#fef3c7", border:"#fcd34d" },
 };
 
 function generarEmails(empresa, cliente, manual) {
@@ -96,7 +97,7 @@ function generarEmails(empresa, cliente, manual) {
   if (tipo === "potencial") return [
     { subject: nombre + ", sus productos en " + emp + " están esperando",
       body: "Estimado/a equipo de " + nombre + "," + NN + "Le escribimos desde " + emp + " para informarle que los productos seleccionados aún están disponibles. Nos especializamos en " + descripcion + ", ideal para negocios de " + rubro + " en " + zona + "." + NN + "Si tienen consultas antes de confirmar, estamos disponibles sin compromiso." + NN + "Saludos cordiales," + NL + firma },
-    { subject: "¿Podemos ayudarles a completar su pedido, " + nombre + "?",
+    { subject: "Podemos ayudarles a completar su pedido, " + nombre,
       body: "Estimado/a equipo de " + nombre + "," + NN + "Notamos que aún no finalizaron su pedido. Muchos negocios de " + rubro + " nos consultan sobre cantidades y tiempos de entrega en " + zona + ". Nos adaptamos a lo que necesitan." + NN + "Saludos cordiales," + NL + firma },
     { subject: "Último llamado — y un beneficio para " + nombre,
       body: "Estimado/a equipo de " + nombre + "," + NN + "Su carrito en " + emp + " está próximo a vencer. Para facilitar este primer pedido, les ofrecemos envío sin cargo si lo completan en las próximas 24 horas." + NN + "Saludos cordiales," + NL + firma },
@@ -142,90 +143,101 @@ function LoginScreen({ onLogin, empresas, onAgregarEmpresa }) {
     setSelId(id); setModal(false);
     setNNombre(""); setNWeb(""); setNDesc(""); setNPass(""); setNLibre(false); setNPaleta(0); setNEmoji("🏪"); setNErr("");
   }
-  const inp = { width:"100%", padding:"10px 12px", background:"rgba(255,255,255,0.07)", border:"1px solid rgba(255,255,255,0.15)", color:"#fff", fontSize:14, boxSizing:"border-box", fontFamily:"Georgia,serif" };
+  const inp = { width:"100%", padding:"11px 14px", background:"rgba(255,255,255,.07)", border:"1.5px solid rgba(255,255,255,.14)", color:"#fff", fontSize:14, boxSizing:"border-box", fontFamily:"'Inter',sans-serif", borderRadius:7, transition:"border-color .15s" };
+  const inpDark = { width:"100%", padding:"10px 13px", background:"rgba(255,255,255,.05)", border:"1.5px solid rgba(255,255,255,.12)", color:"#fff", fontSize:14, boxSizing:"border-box", fontFamily:"'Inter',sans-serif", borderRadius:7 };
   return (
-    <div style={{minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center",background:"linear-gradient(135deg,#0f2018,#1b3a28,#0f2018)",fontFamily:"Georgia,serif",padding:20}}>
+    <div style={{minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center",background:"linear-gradient(135deg,#0c1a12 0%,#162d1f 50%,#0c1a12 100%)",fontFamily:"'Inter',sans-serif",padding:20}}>
       <style>{`
-        @keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+        @keyframes fadeUp{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
         @keyframes mIn{from{opacity:0;transform:scale(.96)}to{opacity:1;transform:scale(1)}}
-        .lcard{animation:fadeUp .4s ease}.ebtn:hover{opacity:.8}
-        .lbtn:hover{opacity:.85;transform:translateY(-1px)}.lbtn{transition:all .2s}
-        input:focus{outline:none;border-color:#52b788!important}button{cursor:pointer}
+        .lcard{animation:fadeUp .5s cubic-bezier(.16,1,.3,1)}
+        .ebtn{transition:all .2s}
+        .ebtn:hover{transform:translateY(-2px)}
+        .lbtn:hover{opacity:.88;transform:translateY(-1px)}
+        .lbtn{transition:all .2s}
+        input:focus,textarea:focus{outline:none;border-color:rgba(82,183,136,.75)!important;box-shadow:0 0 0 3px rgba(82,183,136,.15)!important}
+        button{cursor:pointer}
+        *{box-sizing:border-box}
+        ::-webkit-scrollbar{width:5px}
+        ::-webkit-scrollbar-thumb{background:rgba(255,255,255,.15);border-radius:3px}
       `}</style>
-      <div className="lcard" style={{background:"rgba(255,255,255,0.05)",border:"1px solid rgba(82,183,136,0.2)",backdropFilter:"blur(20px)",padding:"40px 34px",width:"100%",maxWidth:400,boxShadow:"0 24px 80px rgba(0,0,0,.4)"}}>
-        <div style={{textAlign:"center",marginBottom:26}}>
-          <div style={{fontSize:34,marginBottom:8}}>📧</div>
-          <div style={{color:"#fff",fontSize:20,fontWeight:"bold"}}>Email Recovery</div>
-          <div style={{color:"rgba(255,255,255,.4)",fontSize:10,letterSpacing:".15em",textTransform:"uppercase",marginTop:4}}>Plataforma multi-marca</div>
+      <div className="lcard" style={{background:"rgba(255,255,255,.055)",border:"1px solid rgba(82,183,136,.18)",backdropFilter:"blur(28px)",WebkitBackdropFilter:"blur(28px)",padding:"44px 36px",width:"100%",maxWidth:420,boxShadow:"0 32px 80px rgba(0,0,0,.55)",borderRadius:14}}>
+        <div style={{textAlign:"center",marginBottom:32}}>
+          <div style={{display:"inline-flex",alignItems:"center",justifyContent:"center",width:52,height:52,borderRadius:13,background:"linear-gradient(135deg,#52b788,#2d6a4f)",fontSize:24,marginBottom:14,boxShadow:"0 8px 24px rgba(45,106,79,.4)"}}>📧</div>
+          <div style={{color:"#fff",fontSize:24,fontWeight:700,letterSpacing:"-.03em"}}>Recartify</div>
+          <div style={{color:"rgba(255,255,255,.35)",fontSize:11,letterSpacing:".2em",textTransform:"uppercase",marginTop:6,fontWeight:500}}>Plataforma multi-marca</div>
         </div>
-        <div style={{marginBottom:16}}>
-          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}}>
-            <span style={{fontSize:10,letterSpacing:".18em",textTransform:"uppercase",color:"rgba(255,255,255,.45)"}}>Seleccioná tu empresa</span>
-            <button className="ebtn" onClick={()=>setModal(true)} style={{background:"rgba(255,255,255,.08)",border:"1px solid rgba(255,255,255,.15)",color:"rgba(255,255,255,.6)",fontSize:11,padding:"4px 10px",fontFamily:"Georgia,serif"}}>+ Nueva</button>
+
+        <div style={{marginBottom:18}}>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}}>
+            <span style={{fontSize:11,letterSpacing:".1em",textTransform:"uppercase",color:"rgba(255,255,255,.38)",fontWeight:600}}>Empresa</span>
+            <button className="ebtn" onClick={()=>setModal(true)} style={{background:"rgba(255,255,255,.09)",border:"1px solid rgba(255,255,255,.14)",color:"rgba(255,255,255,.65)",fontSize:11,padding:"5px 12px",fontFamily:"'Inter',sans-serif",borderRadius:6,fontWeight:500}}>+ Nueva</button>
           </div>
           <div style={{display:"flex",flexWrap:"wrap",gap:8}}>
             {lista.map(e=>(
-              <button key={e.id} className="ebtn" onClick={()=>cambiar(e.id)} style={{flex:"1 1 calc(50% - 4px)",minWidth:0,padding:"10px 8px",border:"none",background:selId===e.id?"rgba(82,183,136,.25)":"rgba(255,255,255,.06)",color:selId===e.id?"#52b788":"rgba(255,255,255,.5)",outline:selId===e.id?"1px solid #52b788":"1px solid transparent",fontSize:12,fontFamily:"Georgia,serif",borderRadius:2,transition:"all .2s"}}>
-                <div style={{fontSize:18,marginBottom:3}}>{e.emoji}</div>
-                <div style={{fontSize:11,fontWeight:selId===e.id?"bold":"normal",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{e.nombre}</div>
+              <button key={e.id} className="ebtn" onClick={()=>cambiar(e.id)} style={{flex:"1 1 calc(50% - 4px)",minWidth:0,padding:"13px 8px",border:"none",background:selId===e.id?"rgba(82,183,136,.18)":"rgba(255,255,255,.06)",color:selId===e.id?"#6dd9a8":"rgba(255,255,255,.48)",outline:selId===e.id?"1.5px solid rgba(82,183,136,.55)":"1.5px solid transparent",fontSize:12,fontFamily:"'Inter',sans-serif",borderRadius:9,transition:"all .2s",fontWeight:selId===e.id?600:400}}>
+                <div style={{fontSize:20,marginBottom:5}}>{e.emoji}</div>
+                <div style={{overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",fontSize:11.5}}>{e.nombre}</div>
               </button>
             ))}
           </div>
         </div>
+
         {empActual?.password !== null ? (
-          <div style={{marginBottom:16}}>
-            <div style={{fontSize:10,letterSpacing:".18em",textTransform:"uppercase",color:"rgba(255,255,255,.45)",marginBottom:6}}>Contraseña</div>
+          <div style={{marginBottom:18}}>
+            <div style={{fontSize:11,letterSpacing:".1em",textTransform:"uppercase",color:"rgba(255,255,255,.38)",marginBottom:8,fontWeight:600}}>Contraseña</div>
             <input key={selId} type="password" value={pass} onChange={e=>{setPass(e.target.value);setError("");}} onKeyDown={e=>e.key==="Enter"&&ingresar()} placeholder="••••••••" style={inp}/>
           </div>
         ) : (
-          <div style={{marginBottom:16,padding:"11px",background:"rgba(82,183,136,.1)",border:"1px solid rgba(82,183,136,.25)",textAlign:"center"}}>
-            <span style={{color:"#52b788",fontSize:12}}>✓ Acceso libre — sin contraseña</span>
+          <div style={{marginBottom:18,padding:"12px 16px",background:"rgba(82,183,136,.1)",border:"1px solid rgba(82,183,136,.2)",textAlign:"center",borderRadius:8}}>
+            <span style={{color:"#6dd9a8",fontSize:12,fontWeight:500}}>✓ Acceso libre — sin contraseña</span>
           </div>
         )}
-        {error && <p style={{color:"#f87171",fontSize:12,margin:"0 0 12px",textAlign:"center"}}>⚠ {error}</p>}
-        <button className="lbtn" onClick={ingresar} style={{width:"100%",padding:"12px",background:"linear-gradient(135deg,#52b788,#2d6a4f)",color:"#fff",border:"none",fontSize:12,letterSpacing:".18em",textTransform:"uppercase",fontFamily:"Georgia,serif"}}>Ingresar →</button>
+        {error && <p style={{color:"#fca5a5",fontSize:12,margin:"0 0 14px",textAlign:"center",fontWeight:500}}>⚠ {error}</p>}
+        <button className="lbtn" onClick={ingresar} style={{width:"100%",padding:"13px",background:"linear-gradient(135deg,#52b788,#2d6a4f)",color:"#fff",border:"none",fontSize:13,letterSpacing:".06em",textTransform:"uppercase",fontFamily:"'Inter',sans-serif",fontWeight:700,borderRadius:8,boxShadow:"0 6px 20px rgba(45,106,79,.4)"}}>Ingresar →</button>
       </div>
+
       {modal && (
-        <div onClick={()=>setModal(false)} style={{position:"fixed",inset:0,background:"rgba(0,0,0,.7)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:1000,padding:20}}>
-          <div onClick={e=>e.stopPropagation()} style={{background:"#1a2e22",border:"1px solid rgba(82,183,136,.3)",padding:"30px 26px",width:"100%",maxWidth:440,animation:"mIn .25s ease",maxHeight:"90vh",overflowY:"auto"}}>
-            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:20}}>
-              <div style={{color:"#fff",fontSize:15,fontWeight:"bold"}}>+ Nueva empresa</div>
-              <button onClick={()=>setModal(false)} style={{background:"none",border:"none",color:"rgba(255,255,255,.4)",fontSize:18}}>✕</button>
+        <div onClick={()=>setModal(false)} style={{position:"fixed",inset:0,background:"rgba(0,0,0,.75)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:1000,padding:20}}>
+          <div onClick={e=>e.stopPropagation()} style={{background:"#0f1f17",border:"1px solid rgba(82,183,136,.22)",padding:"32px 28px",width:"100%",maxWidth:440,animation:"mIn .28s cubic-bezier(.16,1,.3,1)",maxHeight:"90vh",overflowY:"auto",borderRadius:12}}>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:22}}>
+              <div style={{color:"#fff",fontSize:16,fontWeight:700}}>+ Nueva empresa</div>
+              <button onClick={()=>setModal(false)} style={{background:"rgba(255,255,255,.08)",border:"none",color:"rgba(255,255,255,.45)",fontSize:15,width:30,height:30,borderRadius:6,display:"flex",alignItems:"center",justifyContent:"center",fontFamily:"'Inter',sans-serif"}}>✕</button>
             </div>
             {[["Nombre *",nNombre,setNNombre,"Ej: La Trattoria"],["Sitio web *",nWeb,setNWeb,"Ej: latrattoria.com"],["Descripción",nDesc,setNDesc,"Ej: restaurante italiano"]].map(([label,val,set,ph])=>(
-              <div key={label} style={{marginBottom:12}}>
-                <div style={{fontSize:10,letterSpacing:".15em",textTransform:"uppercase",color:"rgba(255,255,255,.45)",marginBottom:5}}>{label}</div>
-                <input value={val} onChange={e=>set(e.target.value)} placeholder={ph} style={inp}/>
+              <div key={label} style={{marginBottom:14}}>
+                <div style={{fontSize:11,letterSpacing:".1em",textTransform:"uppercase",color:"rgba(255,255,255,.38)",marginBottom:7,fontWeight:600}}>{label}</div>
+                <input value={val} onChange={e=>set(e.target.value)} placeholder={ph} style={inpDark}/>
               </div>
             ))}
-            <div style={{marginBottom:12}}>
-              <div style={{fontSize:10,letterSpacing:".15em",textTransform:"uppercase",color:"rgba(255,255,255,.45)",marginBottom:5}}>Contraseña</div>
-              <input type="password" value={nPass} onChange={e=>setNPass(e.target.value)} placeholder="••••••••" disabled={nLibre} style={{...inp,opacity:nLibre?0.4:1}}/>
-              <label style={{display:"flex",alignItems:"center",gap:8,marginTop:7,cursor:"pointer"}}>
-                <input type="checkbox" checked={nLibre} onChange={e=>setNLibre(e.target.checked)} style={{accentColor:"#52b788"}}/>
-                <span style={{fontSize:12,color:"rgba(255,255,255,.5)"}}>Acceso libre</span>
+            <div style={{marginBottom:14}}>
+              <div style={{fontSize:11,letterSpacing:".1em",textTransform:"uppercase",color:"rgba(255,255,255,.38)",marginBottom:7,fontWeight:600}}>Contraseña</div>
+              <input type="password" value={nPass} onChange={e=>setNPass(e.target.value)} placeholder="••••••••" disabled={nLibre} style={{...inpDark,opacity:nLibre?0.35:1}}/>
+              <label style={{display:"flex",alignItems:"center",gap:9,marginTop:8,cursor:"pointer"}}>
+                <input type="checkbox" checked={nLibre} onChange={e=>setNLibre(e.target.checked)} style={{accentColor:"#52b788",width:14,height:14}}/>
+                <span style={{fontSize:12,color:"rgba(255,255,255,.45)",fontWeight:500}}>Acceso libre</span>
               </label>
             </div>
-            <div style={{marginBottom:12}}>
-              <div style={{fontSize:10,letterSpacing:".15em",textTransform:"uppercase",color:"rgba(255,255,255,.45)",marginBottom:6}}>Ícono</div>
-              <div style={{display:"flex",flexWrap:"wrap",gap:6}}>
+            <div style={{marginBottom:14}}>
+              <div style={{fontSize:11,letterSpacing:".1em",textTransform:"uppercase",color:"rgba(255,255,255,.38)",marginBottom:8,fontWeight:600}}>Ícono</div>
+              <div style={{display:"flex",flexWrap:"wrap",gap:7}}>
                 {EMOJIS.map(em=>(
-                  <button key={em} onClick={()=>setNEmoji(em)} style={{width:32,height:32,fontSize:17,background:nEmoji===em?"rgba(82,183,136,.25)":"rgba(255,255,255,.06)",border:nEmoji===em?"1px solid #52b788":"1px solid transparent",borderRadius:2}}>{em}</button>
+                  <button key={em} onClick={()=>setNEmoji(em)} style={{width:34,height:34,fontSize:18,background:nEmoji===em?"rgba(82,183,136,.22)":"rgba(255,255,255,.06)",border:nEmoji===em?"1.5px solid rgba(82,183,136,.55)":"1.5px solid transparent",borderRadius:7,display:"flex",alignItems:"center",justifyContent:"center"}}>{em}</button>
                 ))}
               </div>
             </div>
-            <div style={{marginBottom:18}}>
-              <div style={{fontSize:10,letterSpacing:".15em",textTransform:"uppercase",color:"rgba(255,255,255,.45)",marginBottom:6}}>Color de marca</div>
-              <div style={{display:"flex",gap:8}}>
+            <div style={{marginBottom:20}}>
+              <div style={{fontSize:11,letterSpacing:".1em",textTransform:"uppercase",color:"rgba(255,255,255,.38)",marginBottom:8,fontWeight:600}}>Color de marca</div>
+              <div style={{display:"flex",gap:9}}>
                 {PALETAS.map((p,i)=>(
-                  <button key={i} onClick={()=>setNPaleta(i)} style={{width:26,height:26,background:p.primario,border:nPaleta===i?"2px solid #fff":"2px solid transparent",borderRadius:"50%"}}/>
+                  <button key={i} onClick={()=>setNPaleta(i)} style={{width:28,height:28,background:p.primario,border:nPaleta===i?"2.5px solid #fff":"2.5px solid transparent",borderRadius:"50%",boxShadow:nPaleta===i?"0 0 0 2px "+p.primario:""}}/>
                 ))}
               </div>
             </div>
-            {nErr && <p style={{color:"#f87171",fontSize:12,margin:"0 0 12px"}}>⚠ {nErr}</p>}
+            {nErr && <p style={{color:"#fca5a5",fontSize:12,margin:"0 0 14px",fontWeight:500}}>⚠ {nErr}</p>}
             <div style={{display:"flex",gap:10}}>
-              <button onClick={()=>setModal(false)} style={{flex:1,padding:"10px",background:"rgba(255,255,255,.07)",border:"1px solid rgba(255,255,255,.15)",color:"rgba(255,255,255,.5)",fontSize:12,textTransform:"uppercase",fontFamily:"Georgia,serif"}}>Cancelar</button>
-              <button onClick={crear} style={{flex:2,padding:"10px",background:"linear-gradient(135deg,#52b788,#2d6a4f)",border:"none",color:"#fff",fontSize:12,textTransform:"uppercase",fontFamily:"Georgia,serif"}}>Crear empresa →</button>
+              <button onClick={()=>setModal(false)} style={{flex:1,padding:"11px",background:"rgba(255,255,255,.07)",border:"1px solid rgba(255,255,255,.13)",color:"rgba(255,255,255,.5)",fontSize:12,textTransform:"uppercase",fontFamily:"'Inter',sans-serif",fontWeight:600,borderRadius:7}}>Cancelar</button>
+              <button onClick={crear} style={{flex:2,padding:"11px",background:"linear-gradient(135deg,#52b788,#2d6a4f)",border:"none",color:"#fff",fontSize:12,textTransform:"uppercase",fontFamily:"'Inter',sans-serif",fontWeight:700,borderRadius:7}}>Crear empresa →</button>
             </div>
           </div>
         </div>
@@ -289,7 +301,6 @@ function AppPrincipal({ empresa, onLogout, onActualizarClientes }) {
     navigator.clipboard.writeText("Asunto: "+emails[tab].subject+"\n\n"+emails[tab].body);
     setCopied(true); setTimeout(()=>setCopied(false),2000);
   }
-
   async function programar() {
     setProgErr(""); setProgOk("");
     const clientEmail = modo==="db" ? cliSel?.email : mEmail;
@@ -312,7 +323,6 @@ function AppPrincipal({ empresa, onLogout, onActualizarClientes }) {
       else { setProgErr(data.error || "Error al programar"); }
     } catch(e) { setProgLoad(false); setProgErr("No se pudo conectar con el servidor"); }
   }
-
   function parsearCSV(txt) {
     const lineas = txt.trim().split("\n").filter(l=>l.trim());
     if (!lineas.length) return [];
@@ -335,154 +345,182 @@ function AppPrincipal({ empresa, onLogout, onActualizarClientes }) {
   }
   function delCliente(id) { onActualizarClientes(empresa.id, empresa.clientes.filter(c=>c.id!==id)); }
 
-  const IS = { width:"100%", padding:"10px 12px", border:"1px solid "+C.medio, background:C.fondo, fontSize:14, color:"#111", boxSizing:"border-box", fontFamily:"Georgia,serif" };
+  const IS = { width:"100%", padding:"10px 13px", border:"1.5px solid #e5e7eb", background:"#fff", fontSize:14, color:"#111", boxSizing:"border-box", fontFamily:"'Inter',sans-serif", borderRadius:7, transition:"border-color .15s" };
   const TABS = [{label:"Email 1",timing:"1 hora",icon:"📬"},{label:"Email 2",timing:"24 horas",icon:"🔔"},{label:"Email 3",timing:"72 horas",icon:"⏳"}];
   const stats = { total:empresa.clientes.length, frecuentes:empresa.clientes.filter(c=>c.tipo==="frecuente").length, activos:empresa.clientes.filter(c=>c.tipo==="activo").length, potenciales:empresa.clientes.filter(c=>c.tipo==="potencial").length };
 
+  const NAV = [
+    {k:"generar",label:"Emails",icon:"✉️"},
+    {k:"clientes",label:"Clientes",icon:"👥"},
+    {k:"basedatos",label:"Base de datos",icon:"📂"},
+    {k:"cola",label:"Cola",icon:"📊"},
+    {k:"resultados",label:"Resultados",icon:"💰"},
+  ];
+
   return (
-    <div style={{minHeight:"100vh",background:C.fondo,fontFamily:"Georgia,serif"}}>
+    <div style={{minHeight:"100vh",background:"#f1f5f9",fontFamily:"'Inter',sans-serif"}}>
       <style>{`
-        @keyframes fi{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
-        .rc:hover{background:${C.suave}!important;cursor:pointer}
-        input:focus,textarea:focus{outline:none;border-color:${C.secundario}!important}
-        ::-webkit-scrollbar{width:4px}::-webkit-scrollbar-thumb{background:${C.medio}}
-        button{cursor:pointer}
+        @keyframes fi{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:translateY(0)}}
+        .rc:hover{background:#f8fafc!important;cursor:pointer}
+        .rc-sel{background:${C.suave}!important}
+        input:focus,textarea:focus{outline:none;border-color:${C.secundario}!important;box-shadow:0 0 0 3px ${C.suave}!important}
+        ::-webkit-scrollbar{width:5px}
+        ::-webkit-scrollbar-thumb{background:#d1d5db;border-radius:3px}
+        button{cursor:pointer;transition:opacity .15s,transform .15s,background .15s}
+        *{box-sizing:border-box}
+        .nav-btn:hover{background:rgba(255,255,255,.12)!important}
+        .tbtn:hover{opacity:.85}
       `}</style>
-      <div style={{background:C.primario,padding:"0 20px",display:"flex",alignItems:"stretch",height:52,gap:4}}>
-        <div style={{display:"flex",alignItems:"center",gap:10,marginRight:22}}>
-          <div style={{width:30,height:30,borderRadius:"50%",background:C.secundario,display:"flex",alignItems:"center",justifyContent:"center",fontSize:15}}>{empresa.emoji}</div>
+
+      {/* ─── HEADER ─────────────────────────────────────────────────── */}
+      <div style={{background:C.primario,padding:"0 24px",display:"flex",alignItems:"stretch",height:58,boxShadow:"0 2px 10px rgba(0,0,0,.15)"}}>
+        <div style={{display:"flex",alignItems:"center",gap:11,marginRight:24,paddingRight:24,borderRight:"1px solid rgba(255,255,255,.12)"}}>
+          <div style={{width:34,height:34,borderRadius:9,background:"rgba(255,255,255,.15)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:16,flexShrink:0}}>{empresa.emoji}</div>
           <div>
-            <div style={{color:"#fff",fontWeight:"bold",fontSize:13}}>{empresa.nombre}</div>
-            <div style={{color:"rgba(255,255,255,.45)",fontSize:9,letterSpacing:".12em",textTransform:"uppercase"}}>{empresa.web}</div>
+            <div style={{color:"#fff",fontWeight:700,fontSize:13.5,letterSpacing:"-.01em",lineHeight:1.2}}>{empresa.nombre}</div>
+            <div style={{color:"rgba(255,255,255,.4)",fontSize:10,letterSpacing:".05em",marginTop:2}}>{empresa.web}</div>
           </div>
         </div>
-        {[{k:"generar",label:"✉️ Emails"},{k:"clientes",label:"👥 Clientes"},{k:"basedatos",label:"📂 Base de datos"},{k:"cola",label:"📊 Cola"},{k:"resultados",label:"💰 Resultados"}].map(({k,label})=>(
-          <button key={k} onClick={()=>setVista(k)} style={{background:"none",border:"none",color:vista===k?"#fff":"rgba(255,255,255,.5)",fontSize:12,padding:"0 13px",borderBottom:vista===k?"2px solid "+C.secundario:"2px solid transparent",fontFamily:"Georgia,serif",transition:"all .2s"}}>{label}</button>
-        ))}
+        <div style={{display:"flex",alignItems:"stretch",gap:2}}>
+          {NAV.map(({k,label,icon})=>(
+            <button key={k} className="nav-btn" onClick={()=>setVista(k)} style={{background:"none",border:"none",color:vista===k?"#fff":"rgba(255,255,255,.52)",fontSize:13,padding:"0 14px",borderBottom:vista===k?"2.5px solid rgba(255,255,255,.85)":"2.5px solid transparent",fontFamily:"'Inter',sans-serif",fontWeight:vista===k?600:400,display:"flex",alignItems:"center",gap:6,borderRadius:0,whiteSpace:"nowrap"}}>
+              <span style={{fontSize:13}}>{icon}</span>{label}
+            </button>
+          ))}
+        </div>
         <div style={{flex:1}}/>
-        <button onClick={onLogout} style={{background:"none",border:"none",color:"rgba(255,255,255,.35)",fontSize:11,fontFamily:"Georgia,serif"}}>Salir →</button>
+        <div style={{display:"flex",alignItems:"center"}}>
+          <button className="tbtn" onClick={onLogout} style={{background:"none",border:"none",color:"rgba(255,255,255,.38)",fontSize:12,fontFamily:"'Inter',sans-serif",fontWeight:500,letterSpacing:".02em",padding:"0 4px"}}>Salir →</button>
+        </div>
       </div>
 
-      <div style={{maxWidth:780,margin:"0 auto",padding:"24px 20px"}}>
+      <div style={{maxWidth:820,margin:"0 auto",padding:"28px 24px"}}>
 
+        {/* ─── CLIENTES ────────────────────────────────────────────── */}
         {vista==="clientes" && (
           <div style={{animation:"fi .3s"}}>
-            <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:10,marginBottom:18}}>
-              {[{label:"Total",val:stats.total,color:C.primario},{label:"Frecuentes",val:stats.frecuentes,color:"#166534"},{label:"Activos",val:stats.activos,color:"#1e40af"},{label:"Potenciales",val:stats.potenciales,color:"#92400e"}].map(s=>(
-                <div key={s.label} style={{background:"#fff",border:"1px solid "+C.medio,padding:"12px 14px"}}>
-                  <div style={{fontSize:24,fontWeight:"bold",color:s.color}}>{s.val}</div>
-                  <div style={{fontSize:10,color:"#6b7280",marginTop:2,textTransform:"uppercase"}}>{s.label}</div>
+            <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:12,marginBottom:20}}>
+              {[{label:"Total clientes",val:stats.total,color:C.primario},{label:"Frecuentes",val:stats.frecuentes,color:"#166534"},{label:"Activos",val:stats.activos,color:"#1e40af"},{label:"Potenciales",val:stats.potenciales,color:"#92400e"}].map(s=>(
+                <div key={s.label} style={{background:"#fff",borderRadius:8,boxShadow:"0 1px 3px rgba(0,0,0,.06),0 4px 14px rgba(0,0,0,.05)",padding:"18px 16px",borderLeft:"4px solid "+s.color}}>
+                  <div style={{fontSize:28,fontWeight:700,color:s.color,letterSpacing:"-.02em"}}>{s.val}</div>
+                  <div style={{fontSize:11,color:"#9ca3af",marginTop:4,textTransform:"uppercase",letterSpacing:".06em",fontWeight:500}}>{s.label}</div>
                 </div>
               ))}
             </div>
-            <input value={busq} onChange={e=>setBusq(e.target.value)} placeholder="Buscar..." style={{...IS,marginBottom:8,background:"#fff"}}/>
-            <div style={{background:"#fff",border:"1px solid "+C.medio}}>
-              <div style={{display:"grid",gridTemplateColumns:"2fr 1.2fr 1fr 90px",padding:"9px 14px",background:C.primario,color:"#fff",fontSize:10,letterSpacing:".13em",textTransform:"uppercase"}}>
+            <input value={busq} onChange={e=>setBusq(e.target.value)} placeholder="Buscar cliente, rubro o zona..." style={{...IS,marginBottom:10}}/>
+            <div style={{background:"#fff",borderRadius:8,boxShadow:"0 1px 3px rgba(0,0,0,.06),0 4px 14px rgba(0,0,0,.05)",overflow:"hidden"}}>
+              <div style={{display:"grid",gridTemplateColumns:"2fr 1.2fr 1fr 100px",padding:"10px 18px",background:"#f8fafc",borderBottom:"1px solid #e5e7eb",fontSize:11,letterSpacing:".1em",textTransform:"uppercase",color:"#6b7280",fontWeight:600}}>
                 <span>Cliente</span><span>Rubro</span><span>Zona</span><span>Perfil</span>
               </div>
               {filtrados.map((c,i)=>{ const b=TIPO_BADGE[c.tipo]||TIPO_BADGE.potencial; return (
-                <div key={c.id} className="rc" onClick={()=>selCliente(c)} style={{display:"grid",gridTemplateColumns:"2fr 1.2fr 1fr 90px",padding:"11px 14px",borderTop:i>0?"1px solid "+C.fondo:"none"}}>
-                  <div><div style={{fontSize:14,color:"#111"}}>{c.nombre}</div><div style={{fontSize:11,color:"#9ca3af"}}>{c.pedidos} pedidos</div></div>
+                <div key={c.id} className="rc" onClick={()=>selCliente(c)} style={{display:"grid",gridTemplateColumns:"2fr 1.2fr 1fr 100px",padding:"13px 18px",borderBottom:"1px solid #f1f5f9",transition:"background .12s"}}>
+                  <div><div style={{fontSize:14,color:"#111",fontWeight:500}}>{c.nombre}</div><div style={{fontSize:11,color:"#9ca3af",marginTop:2}}>{c.pedidos} pedidos</div></div>
                   <div style={{fontSize:13,color:"#4b5563",display:"flex",alignItems:"center"}}>{c.rubro}</div>
                   <div style={{fontSize:13,color:"#4b5563",display:"flex",alignItems:"center"}}>{c.zona}</div>
-                  <div style={{display:"flex",alignItems:"center"}}><span style={{background:b.bg,color:b.color,fontSize:9,padding:"3px 7px",fontWeight:"bold",textTransform:"uppercase"}}>{c.tipo}</span></div>
+                  <div style={{display:"flex",alignItems:"center"}}><span style={{background:b.bg,color:b.color,border:"1px solid "+b.border,fontSize:10,padding:"3px 9px",fontWeight:600,textTransform:"uppercase",borderRadius:20,letterSpacing:".04em"}}>{c.tipo}</span></div>
                 </div>
               );})}
+              {filtrados.length===0 && <div style={{padding:32,textAlign:"center",color:"#9ca3af",fontSize:14}}>Sin resultados.</div>}
             </div>
           </div>
         )}
 
+        {/* ─── BASE DE DATOS ───────────────────────────────────────── */}
         {vista==="basedatos" && (
           <div style={{animation:"fi .3s"}}>
-            <div style={{display:"flex",border:"1px solid "+C.medio,marginBottom:20}}>
-              {[{k:"lista",label:"📄 Ver lista",desc:empresa.clientes.length+" clientes"},{k:"csv",label:"📋 Pegar CSV"},{k:"manual",label:"+ Agregar uno"}].map(({k,label,desc},i)=>(
-                <div key={k} onClick={()=>setDbTab(k)} style={{flex:1,padding:"12px 14px",cursor:"pointer",background:dbTab===k?C.primario:"#fff",color:dbTab===k?"#fff":C.primario,borderRight:i<2?"1px solid "+C.medio:"none"}}>
-                  <div style={{fontWeight:"bold",fontSize:13}}>{label}</div>
-                  {desc && <div style={{fontSize:11,opacity:.7,marginTop:2}}>{desc}</div>}
+            <div style={{display:"flex",background:"#fff",borderRadius:8,padding:5,gap:4,marginBottom:20,boxShadow:"0 1px 3px rgba(0,0,0,.06),0 4px 14px rgba(0,0,0,.05)"}}>
+              {[{k:"lista",label:"Ver lista",icon:"📄",desc:empresa.clientes.length+" clientes"},{k:"csv",label:"Pegar CSV",icon:"📋"},{k:"manual",label:"Agregar cliente",icon:"＋"}].map(({k,label,icon,desc})=>(
+                <div key={k} onClick={()=>setDbTab(k)} style={{flex:1,padding:"11px 12px",cursor:"pointer",background:dbTab===k?C.primario:"transparent",color:dbTab===k?"#fff":C.primario,borderRadius:6,transition:"all .2s",textAlign:"center"}}>
+                  <div style={{fontWeight:600,fontSize:13}}>{icon} {label}</div>
+                  {desc && <div style={{fontSize:11,opacity:.7,marginTop:3}}>{desc}</div>}
                 </div>
               ))}
             </div>
+
             {dbTab==="lista" && (
               empresa.clientes.length===0
-                ? <div style={{background:"#fff",border:"1px solid "+C.medio,padding:40,textAlign:"center",color:"#9ca3af"}}>Sin clientes aún.</div>
-                : <div style={{background:"#fff",border:"1px solid "+C.medio}}>
-                    <div style={{display:"grid",gridTemplateColumns:"2fr 1.2fr 1fr 80px 36px",padding:"9px 14px",background:C.primario,color:"#fff",fontSize:10,textTransform:"uppercase",letterSpacing:".13em"}}>
+                ? <div style={{background:"#fff",borderRadius:8,boxShadow:"0 1px 3px rgba(0,0,0,.06)",padding:40,textAlign:"center",color:"#9ca3af"}}>Sin clientes aún.</div>
+                : <div style={{background:"#fff",borderRadius:8,boxShadow:"0 1px 3px rgba(0,0,0,.06),0 4px 14px rgba(0,0,0,.05)",overflow:"hidden"}}>
+                    <div style={{display:"grid",gridTemplateColumns:"2fr 1.2fr 1fr 90px 36px",padding:"10px 18px",background:"#f8fafc",borderBottom:"1px solid #e5e7eb",fontSize:11,textTransform:"uppercase",letterSpacing:".1em",color:"#6b7280",fontWeight:600}}>
                       <span>Nombre</span><span>Rubro</span><span>Zona</span><span>Perfil</span><span></span>
                     </div>
-                    <div style={{maxHeight:420,overflowY:"auto"}}>
+                    <div style={{maxHeight:440,overflowY:"auto"}}>
                       {empresa.clientes.map((c,i)=>{ const b=TIPO_BADGE[c.tipo]||TIPO_BADGE.potencial; return (
-                        <div key={c.id} style={{display:"grid",gridTemplateColumns:"2fr 1.2fr 1fr 80px 36px",padding:"10px 14px",borderTop:i>0?"1px solid "+C.fondo:"none",alignItems:"center"}}>
-                          <div><div style={{fontSize:14,color:"#111"}}>{c.nombre}</div><div style={{fontSize:11,color:"#9ca3af"}}>{c.pedidos} pedidos</div></div>
+                        <div key={c.id} style={{display:"grid",gridTemplateColumns:"2fr 1.2fr 1fr 90px 36px",padding:"12px 18px",borderBottom:"1px solid #f1f5f9",alignItems:"center"}}>
+                          <div><div style={{fontSize:14,color:"#111",fontWeight:500}}>{c.nombre}</div><div style={{fontSize:11,color:"#9ca3af",marginTop:2}}>{c.pedidos} pedidos</div></div>
                           <div style={{fontSize:13,color:"#4b5563"}}>{c.rubro}</div>
                           <div style={{fontSize:13,color:"#4b5563"}}>{c.zona}</div>
-                          <div><span style={{background:b.bg,color:b.color,fontSize:9,padding:"3px 7px",fontWeight:"bold",textTransform:"uppercase"}}>{c.tipo}</span></div>
-                          <button onClick={()=>delCliente(c.id)} style={{background:"none",border:"none",color:"#d1d5db",fontSize:16,padding:0}}>✕</button>
+                          <div><span style={{background:b.bg,color:b.color,border:"1px solid "+b.border,fontSize:10,padding:"3px 9px",fontWeight:600,textTransform:"uppercase",borderRadius:20,letterSpacing:".04em"}}>{c.tipo}</span></div>
+                          <button onClick={()=>delCliente(c.id)} style={{background:"none",border:"none",color:"#d1d5db",fontSize:16,padding:0,lineHeight:1}}>&times;</button>
                         </div>
                       );})}
                     </div>
                   </div>
             )}
             {dbTab==="csv" && (
-              <div style={{background:"#fff",border:"1px solid "+C.medio,padding:24}}>
-                <p style={{fontSize:13,color:"#4b5563",margin:"0 0 12px"}}>Columnas: Nombre, Rubro, Zona, Tipo, Pedidos, Email</p>
-                <textarea value={csvTxt} onChange={e=>{setCsvTxt(e.target.value);setCsvPrev([]);}} rows={6} placeholder="Hereford,Cafetería,Montevideo,frecuente,8,hereford@hereford.com.uy" style={{width:"100%",padding:"10px",border:"1px solid "+C.medio,fontSize:13,resize:"vertical",boxSizing:"border-box",fontFamily:"monospace"}}/>
-                {csvErr && <p style={{color:"#b91c1c",fontSize:12,margin:"8px 0 0"}}>⚠ {csvErr}</p>}
+              <div style={{background:"#fff",borderRadius:8,boxShadow:"0 1px 3px rgba(0,0,0,.06),0 4px 14px rgba(0,0,0,.05)",padding:24}}>
+                <p style={{fontSize:13,color:"#6b7280",margin:"0 0 12px",lineHeight:1.6}}>Columnas esperadas: <code style={{background:"#f1f5f9",padding:"2px 6px",borderRadius:4,fontSize:12}}>Nombre, Rubro, Zona, Tipo, Pedidos, Email</code></p>
+                <textarea value={csvTxt} onChange={e=>{setCsvTxt(e.target.value);setCsvPrev([]);}} rows={6} placeholder={"Hereford,Cafetería,Montevideo,frecuente,8,hereford@hereford.com.uy"} style={{width:"100%",padding:"11px 13px",border:"1.5px solid #e5e7eb",fontSize:13,resize:"vertical",boxSizing:"border-box",fontFamily:"monospace",borderRadius:7}}/>
+                {csvErr && <p style={{color:"#b91c1c",fontSize:12,margin:"8px 0 0",fontWeight:500}}>⚠ {csvErr}</p>}
                 {csvPrev.length>0 && <div style={{marginTop:12}}>
-                  <div style={{fontSize:12,color:C.primario,marginBottom:6}}>{csvPrev.length} clientes listos para importar</div>
-                  <button onClick={importCSV} style={{background:C.primario,color:"#fff",border:"none",padding:"10px 24px",fontSize:12,textTransform:"uppercase"}}>✓ Importar</button>
+                  <div style={{fontSize:12,color:C.primario,marginBottom:8,fontWeight:600}}>{csvPrev.length} clientes listos para importar</div>
+                  <button onClick={importCSV} style={{background:C.primario,color:"#fff",border:"none",padding:"10px 22px",fontSize:13,fontWeight:600,borderRadius:6}}>✓ Importar</button>
                 </div>}
-                {csvPrev.length===0 && <button onClick={prevCSV} style={{marginTop:12,background:C.primario,color:"#fff",border:"none",padding:"10px 24px",fontSize:12,textTransform:"uppercase"}}>Vista previa →</button>}
+                {csvPrev.length===0 && <button onClick={prevCSV} style={{marginTop:12,background:C.primario,color:"#fff",border:"none",padding:"10px 22px",fontSize:13,fontWeight:600,borderRadius:6}}>Vista previa →</button>}
               </div>
             )}
             {dbTab==="manual" && (
-              <div style={{background:"#fff",border:"1px solid "+C.medio,padding:24}}>
-                <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,marginBottom:12}}>
+              <div style={{background:"#fff",borderRadius:8,boxShadow:"0 1px 3px rgba(0,0,0,.06),0 4px 14px rgba(0,0,0,.05)",padding:24}}>
+                <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14,marginBottom:14}}>
                   {[["Nombre *",cNom,setCNom,"Ej: Café del Sur"],["Rubro",cRub,setCRub,"Ej: Cafetería"],["Zona",cZon,setCZon,"Ej: Montevideo"],["Pedidos",cPed,setCPed,"Ej: 5"],["Email",cEmail,setCEmail,"contacto@empresa.com"]].map(([lbl,val,set,ph])=>(
-                    <div key={lbl}><div style={{fontSize:10,textTransform:"uppercase",color:C.primario,marginBottom:5,fontWeight:"bold"}}>{lbl}</div><input value={val} onChange={e=>set(e.target.value)} placeholder={ph} style={IS}/></div>
+                    <div key={lbl}><div style={{fontSize:11,textTransform:"uppercase",color:"#6b7280",marginBottom:6,fontWeight:600,letterSpacing:".07em"}}>{lbl}</div><input value={val} onChange={e=>set(e.target.value)} placeholder={ph} style={IS}/></div>
                   ))}
                 </div>
-                <div style={{marginBottom:16}}>
-                  <div style={{fontSize:10,textTransform:"uppercase",color:C.primario,marginBottom:6,fontWeight:"bold"}}>Perfil</div>
+                <div style={{marginBottom:18}}>
+                  <div style={{fontSize:11,textTransform:"uppercase",color:"#6b7280",marginBottom:8,fontWeight:600,letterSpacing:".07em"}}>Perfil</div>
                   <div style={{display:"flex",gap:8}}>
                     {["frecuente","activo","potencial"].map(t=>{ const b=TIPO_BADGE[t]; return (
-                      <button key={t} onClick={()=>setCTip(t)} style={{flex:1,padding:"9px",border:"none",fontSize:12,fontWeight:"bold",textTransform:"uppercase",background:cTip===t?b.bg:"#f5f5f5",color:cTip===t?b.color:"#9ca3af",outline:cTip===t?"2px solid "+b.color:"none"}}>{t}</button>
+                      <button key={t} onClick={()=>setCTip(t)} style={{flex:1,padding:"10px",border:"none",fontSize:12,fontWeight:600,textTransform:"uppercase",letterSpacing:".04em",background:cTip===t?b.bg:"#f9fafb",color:cTip===t?b.color:"#9ca3af",outline:cTip===t?"1.5px solid "+b.border:"none",borderRadius:7}}>{t}</button>
                     );})}
                   </div>
                 </div>
-                {cErr && <p style={{color:"#b91c1c",fontSize:12,margin:"0 0 10px"}}>⚠ {cErr}</p>}
-                {cOk && <p style={{color:"#166534",fontSize:12,margin:"0 0 10px"}}>{cOk}</p>}
-                <button onClick={addManual} style={{background:C.primario,color:"#fff",border:"none",padding:"10px 26px",fontSize:12,textTransform:"uppercase"}}>Agregar cliente</button>
+                {cErr && <p style={{color:"#b91c1c",fontSize:12,margin:"0 0 12px",fontWeight:500}}>⚠ {cErr}</p>}
+                {cOk && <p style={{color:"#166534",fontSize:12,margin:"0 0 12px",fontWeight:600}}>{cOk}</p>}
+                <button onClick={addManual} style={{background:C.primario,color:"#fff",border:"none",padding:"11px 26px",fontSize:13,fontWeight:600,borderRadius:6}}>Agregar cliente</button>
               </div>
             )}
           </div>
         )}
 
+        {/* ─── COLA ────────────────────────────────────────────────── */}
         {vista==="cola" && (
           <div style={{animation:"fi .3s"}}>
-            <div style={{fontSize:16,fontWeight:"bold",color:C.primario,marginBottom:16}}>📊 Cola de envío automático</div>
+            <div style={{fontSize:18,fontWeight:700,color:"#111",marginBottom:20,letterSpacing:"-.02em"}}>📊 Cola de envío automático</div>
             {cola ? (
               <>
-                <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:10,marginBottom:18}}>
+                <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:12,marginBottom:20}}>
                   {[{label:"Registrados",val:cola.stats.total,color:C.primario},{label:"Email 1 enviados",val:cola.stats.e1||0,color:"#166534"},{label:"Email 2 enviados",val:cola.stats.e2||0,color:"#1e40af"},{label:"Email 3 enviados",val:cola.stats.e3||0,color:"#92400e"}].map(s=>(
-                    <div key={s.label} style={{background:"#fff",border:"1px solid "+C.medio,padding:"12px 14px"}}>
-                      <div style={{fontSize:24,fontWeight:"bold",color:s.color}}>{s.val}</div>
-                      <div style={{fontSize:10,color:"#6b7280",marginTop:2}}>{s.label}</div>
+                    <div key={s.label} style={{background:"#fff",borderRadius:8,boxShadow:"0 1px 3px rgba(0,0,0,.06),0 4px 14px rgba(0,0,0,.05)",padding:"18px 16px",borderLeft:"4px solid "+s.color}}>
+                      <div style={{fontSize:28,fontWeight:700,color:s.color,letterSpacing:"-.02em"}}>{s.val}</div>
+                      <div style={{fontSize:11,color:"#9ca3af",marginTop:4,textTransform:"uppercase",letterSpacing:".06em",fontWeight:500}}>{s.label}</div>
                     </div>
                   ))}
                 </div>
                 {cola.queue.length===0
-                  ? <div style={{background:"#fff",border:"1px solid "+C.medio,padding:40,textAlign:"center",color:"#9ca3af"}}>Sin carritos registrados aún.</div>
-                  : <div style={{background:"#fff",border:"1px solid "+C.medio}}>
-                      <div style={{display:"grid",gridTemplateColumns:"2fr 1.4fr 60px 60px 60px",padding:"9px 14px",background:C.primario,color:"#fff",fontSize:10,textTransform:"uppercase",letterSpacing:".13em"}}>
-                        <span>Cliente</span><span>Empresa</span><span>E1</span><span>E2</span><span>E3</span>
+                  ? <div style={{background:"#fff",borderRadius:8,boxShadow:"0 1px 3px rgba(0,0,0,.06)",padding:40,textAlign:"center",color:"#9ca3af",fontSize:14}}>Sin carritos registrados aún.</div>
+                  : <div style={{background:"#fff",borderRadius:8,boxShadow:"0 1px 3px rgba(0,0,0,.06),0 4px 14px rgba(0,0,0,.05)",overflow:"hidden"}}>
+                      <div style={{display:"grid",gridTemplateColumns:"2fr 1.4fr 70px 70px 70px",padding:"10px 18px",background:"#f8fafc",borderBottom:"1px solid #e5e7eb",fontSize:11,textTransform:"uppercase",letterSpacing:".1em",color:"#6b7280",fontWeight:600}}>
+                        <span>Cliente</span><span>Empresa</span><span style={{textAlign:"center"}}>E1</span><span style={{textAlign:"center"}}>E2</span><span style={{textAlign:"center"}}>E3</span>
                       </div>
-                      <div style={{maxHeight:400,overflowY:"auto"}}>
+                      <div style={{maxHeight:420,overflowY:"auto"}}>
                         {cola.queue.map((r,i)=>(
-                          <div key={r.id} style={{display:"grid",gridTemplateColumns:"2fr 1.4fr 60px 60px 60px",padding:"10px 14px",borderTop:i>0?"1px solid "+C.fondo:"none",alignItems:"center"}}>
-                            <div><div style={{fontSize:13,color:"#111",fontWeight:"bold"}}>{r.client_name}</div><div style={{fontSize:11,color:"#9ca3af"}}>{r.client_email}</div></div>
-                            <div style={{fontSize:12,color:"#4b5563"}}>{r.company_nombre}</div>
+                          <div key={r.id} style={{display:"grid",gridTemplateColumns:"2fr 1.4fr 70px 70px 70px",padding:"13px 18px",borderBottom:"1px solid #f1f5f9",alignItems:"center"}}>
+                            <div><div style={{fontSize:13,color:"#111",fontWeight:500}}>{r.client_name}</div><div style={{fontSize:11,color:"#9ca3af",marginTop:2}}>{r.client_email}</div></div>
+                            <div style={{fontSize:12,color:"#4b5563",fontWeight:500}}>{r.company_nombre}</div>
                             {[r.email_1_sent,r.email_2_sent,r.email_3_sent].map((s,j)=>(
-                              <div key={j} style={{textAlign:"center",fontSize:15}}>{s?"✅":"⏳"}</div>
+                              <div key={j} style={{textAlign:"center"}}>
+                                <span style={{display:"inline-block",width:22,height:22,borderRadius:"50%",background:s?"#dcfce7":"#f1f5f9",border:"1.5px solid "+(s?"#86efac":"#e5e7eb"),fontSize:11,lineHeight:"20px",color:s?"#166534":"#9ca3af"}}>{s?"✓":"·"}</span>
+                              </div>
                             ))}
                           </div>
                         ))}
@@ -490,48 +528,47 @@ function AppPrincipal({ empresa, onLogout, onActualizarClientes }) {
                     </div>
                 }
               </>
-            ) : <div style={{padding:40,textAlign:"center",color:"#9ca3af"}}>Cargando cola...</div>}
+            ) : <div style={{padding:40,textAlign:"center",color:"#9ca3af",fontSize:14}}>Cargando cola...</div>}
           </div>
         )}
 
+        {/* ─── RESULTADOS ──────────────────────────────────────────── */}
         {vista==="resultados" && (
           <div style={{animation:"fi .3s"}}>
-            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:20}}>
-              <div style={{fontSize:16,fontWeight:"bold",color:C.primario}}>💰 Resultados de recuperación</div>
-              <button onClick={()=>fetch("/api/dashboard").then(r=>r.json()).then(d=>{setCola(d);setResultados(d);})} style={{background:C.primario,color:"#fff",border:"none",padding:"7px 16px",fontSize:11,letterSpacing:".12em",textTransform:"uppercase"}}>Actualizar</button>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:22}}>
+              <div style={{fontSize:18,fontWeight:700,color:"#111",letterSpacing:"-.02em"}}>💰 Resultados de recuperación</div>
+              <button onClick={()=>fetch("/api/dashboard").then(r=>r.json()).then(d=>{setCola(d);setResultados(d);})} style={{background:"#fff",border:"1.5px solid #e5e7eb",color:C.primario,padding:"8px 18px",fontSize:12,fontWeight:600,borderRadius:6,boxShadow:"0 1px 3px rgba(0,0,0,.06)"}}>↻ Actualizar</button>
             </div>
             {resultados ? (()=>{
               const s = resultados.stats;
-              const tasa = s.total > 0 ? Math.round((s.recovered/s.total)*100) : 0;
+              const tasa = s.total > 0 ? Math.round(((s.recovered||0)/s.total)*100) : 0;
               const maxMonto = resultados.byMonth?.length ? Math.max(...resultados.byMonth.map(m=>m.monto||0), 1) : 1;
               return (
                 <>
-                  {/* KPIs principales */}
-                  <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:10,marginBottom:24}}>
+                  <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:12,marginBottom:22}}>
                     {[
-                      {label:"Carritos registrados", val:s.total, color:C.primario, icon:"🛒"},
-                      {label:"Ventas recuperadas",   val:s.recovered||0, color:"#166534", icon:"✅"},
-                      {label:"Tasa de recuperación", val:tasa+"%", color:"#1e40af", icon:"📈"},
-                      {label:"Ingresos recuperados", val:"$"+(s.revenue_recovered||0).toLocaleString("es-UY"), color:"#92400e", icon:"💵"},
+                      {label:"Carritos registrados", val:s.total,                                      color:C.primario, icon:"🛒"},
+                      {label:"Ventas recuperadas",   val:s.recovered||0,                               color:"#16a34a",  icon:"✅"},
+                      {label:"Tasa de recuperación", val:tasa+"%",                                     color:"#2563eb",  icon:"📈"},
+                      {label:"Ingresos recuperados", val:"$"+(s.revenue_recovered||0).toLocaleString("es-UY"), color:"#d97706", icon:"💵"},
                     ].map(k=>(
-                      <div key={k.label} style={{background:"#fff",border:"1px solid "+C.medio,padding:"16px 14px",textAlign:"center"}}>
-                        <div style={{fontSize:22,marginBottom:4}}>{k.icon}</div>
-                        <div style={{fontSize:22,fontWeight:"bold",color:k.color}}>{k.val}</div>
-                        <div style={{fontSize:10,color:"#6b7280",marginTop:3,textTransform:"uppercase",letterSpacing:".06em"}}>{k.label}</div>
+                      <div key={k.label} style={{background:"#fff",borderRadius:8,boxShadow:"0 1px 3px rgba(0,0,0,.06),0 4px 14px rgba(0,0,0,.05)",padding:"20px 16px",borderLeft:"4px solid "+k.color}}>
+                        <div style={{fontSize:13,marginBottom:10}}>{k.icon}</div>
+                        <div style={{fontSize:26,fontWeight:700,color:"#111",letterSpacing:"-.02em",lineHeight:1}}>{k.val}</div>
+                        <div style={{fontSize:11,color:"#9ca3af",marginTop:7,textTransform:"uppercase",letterSpacing:".06em",fontWeight:500}}>{k.label}</div>
                       </div>
                     ))}
                   </div>
 
-                  {/* Gráfico por mes */}
                   {resultados.byMonth?.length > 0 && (
-                    <div style={{background:"#fff",border:"1px solid "+C.medio,padding:"20px 24px",marginBottom:20}}>
-                      <div style={{fontSize:13,fontWeight:"bold",color:C.primario,marginBottom:16}}>Ventas recuperadas por mes</div>
-                      <div style={{display:"flex",alignItems:"flex-end",gap:12,height:120}}>
+                    <div style={{background:"#fff",borderRadius:8,boxShadow:"0 1px 3px rgba(0,0,0,.06),0 4px 14px rgba(0,0,0,.05)",padding:"22px 24px",marginBottom:18}}>
+                      <div style={{fontSize:13,fontWeight:700,color:"#111",marginBottom:20,letterSpacing:"-.01em"}}>Ventas recuperadas por mes</div>
+                      <div style={{display:"flex",alignItems:"flex-end",gap:14,height:130}}>
                         {[...resultados.byMonth].reverse().map((m,i)=>(
-                          <div key={i} style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",gap:4}}>
-                            <div style={{fontSize:11,color:C.primario,fontWeight:"bold"}}>${(m.monto||0).toLocaleString("es-UY")}</div>
-                            <div style={{width:"100%",background:C.secundario,height:Math.max(8,Math.round((m.monto/maxMonto)*90)),borderRadius:"3px 3px 0 0",minHeight:8}}/>
-                            <div style={{fontSize:10,color:"#6b7280"}}>{m.mes}</div>
+                          <div key={i} style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",gap:5}}>
+                            <div style={{fontSize:11,color:C.primario,fontWeight:700}}>${(m.monto||0).toLocaleString("es-UY")}</div>
+                            <div style={{width:"100%",background:C.secundario,height:Math.max(10,Math.round((m.monto/maxMonto)*96)),borderRadius:"5px 5px 0 0",minHeight:10,opacity:.85}}/>
+                            <div style={{fontSize:10,color:"#6b7280",fontWeight:500}}>{m.mes}</div>
                             <div style={{fontSize:10,color:"#9ca3af"}}>{m.ventas} venta{m.ventas!==1?"s":""}</div>
                           </div>
                         ))}
@@ -539,124 +576,126 @@ function AppPrincipal({ empresa, onLogout, onActualizarClientes }) {
                     </div>
                   )}
 
-                  {/* Tabla de ventas recuperadas */}
-                  <div style={{background:"#fff",border:"1px solid "+C.medio}}>
-                    <div style={{padding:"12px 16px",background:C.primario,color:"#fff",fontSize:11,fontWeight:"bold",textTransform:"uppercase",letterSpacing:".1em"}}>
+                  <div style={{background:"#fff",borderRadius:8,boxShadow:"0 1px 3px rgba(0,0,0,.06),0 4px 14px rgba(0,0,0,.05)",overflow:"hidden",marginBottom:14}}>
+                    <div style={{padding:"13px 18px",background:C.primario,color:"#fff",fontSize:12,fontWeight:600,textTransform:"uppercase",letterSpacing:".08em"}}>
                       Historial de ventas recuperadas
                     </div>
                     {(resultados.queue||[]).filter(r=>r.recovered).length === 0
-                      ? <div style={{padding:40,textAlign:"center",color:"#9ca3af",fontSize:14}}>
+                      ? <div style={{padding:40,textAlign:"center",color:"#9ca3af",fontSize:14,lineHeight:1.8}}>
                           Aún no hay ventas recuperadas.<br/>
-                          <span style={{fontSize:12,marginTop:8,display:"block"}}>Cuando un cliente complete una compra después de recibir un email, aparecerá acá.</span>
+                          <span style={{fontSize:12,color:"#d1d5db"}}>Cuando un cliente complete una compra después de recibir un email, aparecerá acá.</span>
                         </div>
-                      : <div style={{maxHeight:360,overflowY:"auto"}}>
-                          <div style={{display:"grid",gridTemplateColumns:"2fr 1.4fr 1fr 90px",padding:"9px 16px",background:"#f9fafb",fontSize:10,textTransform:"uppercase",letterSpacing:".1em",color:"#6b7280",borderBottom:"1px solid "+C.fondo}}>
+                      : <div style={{maxHeight:380,overflowY:"auto"}}>
+                          <div style={{display:"grid",gridTemplateColumns:"2fr 1.4fr 1fr 100px",padding:"10px 18px",background:"#f8fafc",borderBottom:"1px solid #e5e7eb",fontSize:11,textTransform:"uppercase",letterSpacing:".1em",color:"#6b7280",fontWeight:600}}>
                             <span>Cliente</span><span>Empresa</span><span>Fecha</span><span style={{textAlign:"right"}}>Monto</span>
                           </div>
                           {(resultados.queue||[]).filter(r=>r.recovered).map((r,i)=>(
-                            <div key={r.id} style={{display:"grid",gridTemplateColumns:"2fr 1.4fr 1fr 90px",padding:"11px 16px",borderTop:i>0?"1px solid "+C.fondo:"none",alignItems:"center"}}>
+                            <div key={r.id} style={{display:"grid",gridTemplateColumns:"2fr 1.4fr 1fr 100px",padding:"13px 18px",borderBottom:"1px solid #f1f5f9",alignItems:"center"}}>
                               <div>
-                                <div style={{fontSize:13,color:"#111",fontWeight:"bold"}}>{r.client_name}</div>
-                                <div style={{fontSize:11,color:"#9ca3af"}}>{r.client_email}</div>
+                                <div style={{fontSize:13,color:"#111",fontWeight:500}}>{r.client_name}</div>
+                                <div style={{fontSize:11,color:"#9ca3af",marginTop:2}}>{r.client_email}</div>
                               </div>
-                              <div style={{fontSize:12,color:"#4b5563"}}>{r.company_nombre}</div>
+                              <div style={{fontSize:12,color:"#4b5563",fontWeight:500}}>{r.company_nombre}</div>
                               <div style={{fontSize:11,color:"#6b7280"}}>{r.recovered_at ? new Date(r.recovered_at*1000).toLocaleDateString("es-UY") : "—"}</div>
-                              <div style={{fontSize:13,fontWeight:"bold",color:"#166534",textAlign:"right"}}>${(r.order_value||0).toLocaleString("es-UY")}</div>
+                              <div style={{fontSize:13,fontWeight:700,color:"#16a34a",textAlign:"right"}}>${(r.order_value||0).toLocaleString("es-UY")}</div>
                             </div>
                           ))}
                         </div>
                     }
                   </div>
 
-                  {/* Cómo se trackea */}
-                  <div style={{marginTop:16,padding:"14px 16px",background:"rgba(0,0,0,.03)",border:"1px solid "+C.medio,fontSize:12,color:"#6b7280",lineHeight:1.8}}>
-                    <strong style={{color:C.primario}}>¿Cómo se detecta una venta recuperada?</strong><br/>
-                    Cuando un cliente completa la compra en la tienda, esta envía un webhook a <code style={{background:"#f1f5f9",padding:"1px 5px",fontSize:11}}>/api/cart-completed</code> con el email y el monto. El servidor verifica que ese cliente haya recibido al menos un email de recuperación, y si es así, cuenta la venta como recuperada por Email Recovery.
+                  <div style={{padding:"16px 18px",background:"#f8fafc",border:"1px solid #e5e7eb",fontSize:12,color:"#6b7280",lineHeight:1.9,borderRadius:8}}>
+                    <strong style={{color:C.primario,fontWeight:600}}>¿Cómo se detecta una venta recuperada?</strong><br/>
+                    Cuando un cliente completa la compra, la tienda envía un webhook a <code style={{background:"#f1f5f9",padding:"2px 6px",fontSize:11,borderRadius:4,fontFamily:"monospace"}}>/api/cart-completed</code> con el email y el monto. El sistema verifica que ese cliente haya recibido al menos un email de recuperación, y recién entonces contabiliza la venta.
                   </div>
                 </>
               );
-            })() : <div style={{padding:40,textAlign:"center",color:"#9ca3af"}}>Cargando...</div>}
+            })() : <div style={{padding:40,textAlign:"center",color:"#9ca3af",fontSize:14}}>Cargando...</div>}
           </div>
         )}
 
+        {/* ─── GENERAR EMAILS ──────────────────────────────────────── */}
         {vista==="generar" && (
           <div style={{animation:"fi .3s"}}>
-            <div style={{display:"flex",border:"1px solid "+C.medio,marginBottom:18}}>
-              {[{k:"db",label:"👥 Desde base de clientes"},{k:"manual",label:"✏️ Ingreso manual"}].map(({k,label},i)=>(
-                <div key={k} onClick={()=>{setModo(k);setEmails(null);setCliSel(null);setProgOk("");setProgErr("");}} style={{flex:1,padding:"12px 16px",cursor:"pointer",background:modo===k?C.primario:"#fff",color:modo===k?"#fff":C.primario,borderRight:i===0?"1px solid "+C.medio:"none",fontSize:13,fontWeight:"bold"}}>
-                  {label}
+            <div style={{display:"flex",background:"#fff",borderRadius:8,padding:5,gap:4,marginBottom:20,boxShadow:"0 1px 3px rgba(0,0,0,.06),0 4px 14px rgba(0,0,0,.05)"}}>
+              {[{k:"db",label:"Desde base de clientes",icon:"👥"},{k:"manual",label:"Ingreso manual",icon:"✏️"}].map(({k,label,icon})=>(
+                <div key={k} onClick={()=>{setModo(k);setEmails(null);setCliSel(null);setProgOk("");setProgErr("");}} style={{flex:1,padding:"11px 16px",cursor:"pointer",background:modo===k?C.primario:"transparent",color:modo===k?"#fff":C.primario,fontSize:13,fontWeight:600,borderRadius:6,display:"flex",alignItems:"center",gap:7,justifyContent:"center",transition:"all .2s"}}>
+                  <span>{icon}</span>{label}
                 </div>
               ))}
             </div>
+
             {modo==="db" && (
               <div style={{marginBottom:18}}>
-                <input value={busq} onChange={e=>setBusq(e.target.value)} placeholder="Buscar cliente..." style={{...IS,marginBottom:8,background:"#fff"}}/>
-                <div style={{background:"#fff",border:"1px solid "+C.medio,maxHeight:260,overflowY:"auto"}}>
-                  <div style={{display:"grid",gridTemplateColumns:"2fr 1.2fr 1fr 90px",padding:"8px 14px",background:C.primario,color:"#fff",fontSize:10,textTransform:"uppercase",letterSpacing:".13em",position:"sticky",top:0}}>
+                <input value={busq} onChange={e=>setBusq(e.target.value)} placeholder="Buscar cliente..." style={{...IS,marginBottom:10}}/>
+                <div style={{background:"#fff",borderRadius:8,boxShadow:"0 1px 3px rgba(0,0,0,.06),0 4px 14px rgba(0,0,0,.05)",overflow:"hidden",maxHeight:280}}>
+                  <div style={{display:"grid",gridTemplateColumns:"2fr 1.2fr 1fr 100px",padding:"10px 18px",background:"#f8fafc",borderBottom:"1px solid #e5e7eb",fontSize:11,textTransform:"uppercase",letterSpacing:".1em",color:"#6b7280",fontWeight:600,position:"sticky",top:0}}>
                     <span>Cliente</span><span>Rubro</span><span>Zona</span><span>Perfil</span>
                   </div>
-                  {filtrados.map((c,i)=>{ const b=TIPO_BADGE[c.tipo]||TIPO_BADGE.potencial; const sel=cliSel?.id===c.id; return (
-                    <div key={c.id} className="rc" onClick={()=>selCliente(c)} style={{display:"grid",gridTemplateColumns:"2fr 1.2fr 1fr 90px",padding:"10px 14px",borderTop:i>0?"1px solid "+C.fondo:"none",background:sel?C.suave:"#fff",borderLeft:sel?"3px solid "+C.primario:"3px solid transparent"}}>
-                      <div><div style={{fontSize:14,color:"#111",fontWeight:sel?"bold":"normal"}}>{c.nombre}</div><div style={{fontSize:11,color:"#9ca3af"}}>{c.pedidos} pedidos</div></div>
-                      <div style={{fontSize:13,color:"#4b5563",display:"flex",alignItems:"center"}}>{c.rubro}</div>
-                      <div style={{fontSize:13,color:"#4b5563",display:"flex",alignItems:"center"}}>{c.zona}</div>
-                      <div style={{display:"flex",alignItems:"center"}}><span style={{background:b.bg,color:b.color,fontSize:9,padding:"3px 7px",fontWeight:"bold",textTransform:"uppercase"}}>{c.tipo}</span></div>
-                    </div>
-                  );})}
-                  {filtrados.length===0 && <div style={{padding:20,textAlign:"center",color:"#9ca3af"}}>Sin resultados.</div>}
+                  <div style={{overflowY:"auto",maxHeight:240}}>
+                    {filtrados.map((c)=>{ const b=TIPO_BADGE[c.tipo]||TIPO_BADGE.potencial; const sel=cliSel?.id===c.id; return (
+                      <div key={c.id} className={"rc"+(sel?" rc-sel":"")} onClick={()=>selCliente(c)} style={{display:"grid",gridTemplateColumns:"2fr 1.2fr 1fr 100px",padding:"12px 18px",borderBottom:"1px solid #f1f5f9",transition:"background .12s",borderLeft:sel?"3px solid "+C.primario:"3px solid transparent"}}>
+                        <div><div style={{fontSize:14,color:"#111",fontWeight:sel?600:500}}>{c.nombre}</div><div style={{fontSize:11,color:"#9ca3af",marginTop:2}}>{c.pedidos} pedidos</div></div>
+                        <div style={{fontSize:13,color:"#4b5563",display:"flex",alignItems:"center"}}>{c.rubro}</div>
+                        <div style={{fontSize:13,color:"#4b5563",display:"flex",alignItems:"center"}}>{c.zona}</div>
+                        <div style={{display:"flex",alignItems:"center"}}><span style={{background:b.bg,color:b.color,border:"1px solid "+b.border,fontSize:10,padding:"3px 9px",fontWeight:600,textTransform:"uppercase",borderRadius:20,letterSpacing:".04em"}}>{c.tipo}</span></div>
+                      </div>
+                    );})}
+                    {filtrados.length===0 && <div style={{padding:24,textAlign:"center",color:"#9ca3af",fontSize:13}}>Sin resultados.</div>}
+                  </div>
                 </div>
               </div>
             )}
+
             {modo==="manual" && (
-              <div style={{background:"#fff",border:"1px solid "+C.medio,padding:22,marginBottom:18}}>
-                <div style={{marginBottom:13}}>
-                  <div style={{fontSize:10,textTransform:"uppercase",color:C.primario,marginBottom:6,fontWeight:"bold"}}>Nombre del cliente</div>
-                  <input value={mNom} onChange={e=>setMNom(e.target.value)} placeholder="Ej: Café del Centro" style={IS}/>
+              <div style={{background:"#fff",borderRadius:8,boxShadow:"0 1px 3px rgba(0,0,0,.06),0 4px 14px rgba(0,0,0,.05)",padding:24,marginBottom:18}}>
+                {[["Nombre del cliente","text",mNom,setMNom,"Ej: Café del Centro"],["Email del cliente","email",mEmail,setMEmail,"Ej: contacto@cafe.com"]].map(([lbl,type,val,set,ph])=>(
+                  <div key={lbl} style={{marginBottom:14}}>
+                    <div style={{fontSize:11,textTransform:"uppercase",color:"#6b7280",marginBottom:7,fontWeight:600,letterSpacing:".07em"}}>{lbl}</div>
+                    <input type={type} value={val} onChange={e=>set(e.target.value)} placeholder={ph} style={IS}/>
+                  </div>
+                ))}
+                <div style={{marginBottom:18}}>
+                  <div style={{fontSize:11,textTransform:"uppercase",color:"#6b7280",marginBottom:7,fontWeight:600,letterSpacing:".07em"}}>Productos en el carrito</div>
+                  <textarea value={mProds} onChange={e=>setMProds(e.target.value)} rows={3} placeholder={"Ej: 500x Bowl compostable 750ml"} style={{...IS,resize:"vertical"}}/>
                 </div>
-                <div style={{marginBottom:13}}>
-                  <div style={{fontSize:10,textTransform:"uppercase",color:C.primario,marginBottom:6,fontWeight:"bold"}}>Email del cliente</div>
-                  <input type="email" value={mEmail} onChange={e=>setMEmail(e.target.value)} placeholder="Ej: contacto@cafe.com" style={IS}/>
-                </div>
-                <div style={{marginBottom:16}}>
-                  <div style={{fontSize:10,textTransform:"uppercase",color:C.primario,marginBottom:6,fontWeight:"bold"}}>Productos en el carrito</div>
-                  <textarea value={mProds} onChange={e=>setMProds(e.target.value)} rows={3} placeholder="Ej: 500x Bowl compostable 750ml" style={{...IS,resize:"vertical"}}/>
-                </div>
-                {mErr && <p style={{color:"#b91c1c",fontSize:12,margin:"0 0 12px"}}>⚠ {mErr}</p>}
-                <button onClick={genManual} style={{background:C.primario,color:"#fff",border:"none",padding:"10px 24px",fontSize:12,textTransform:"uppercase"}}>Generar emails</button>
+                {mErr && <p style={{color:"#b91c1c",fontSize:12,margin:"0 0 14px",fontWeight:500}}>⚠ {mErr}</p>}
+                <button onClick={genManual} style={{background:C.primario,color:"#fff",border:"none",padding:"11px 24px",fontSize:13,fontWeight:600,borderRadius:6}}>Generar emails →</button>
               </div>
             )}
+
             {emails && (
               <div style={{animation:"fi .3s"}}>
-                <div style={{display:"flex"}}>
+                <div style={{display:"flex",background:"#f8fafc",borderRadius:"8px 8px 0 0",overflow:"hidden",border:"1px solid #e5e7eb",borderBottom:"none"}}>
                   {TABS.map((t,i)=>(
-                    <div key={i} onClick={()=>{setTab(i);setCopied(false);}} style={{flex:1,padding:"10px 8px",textAlign:"center",cursor:"pointer",background:tab===i?C.primario:C.medio,color:tab===i?"#fff":C.primario,borderRight:i<2?"1px solid "+(tab===i?C.secundario:C.medio):"none",fontSize:12}}>
-                      <div style={{fontSize:17}}>{t.icon}</div>
-                      <div style={{fontWeight:"bold",marginTop:2}}>{t.label}</div>
-                      <div style={{fontSize:10,opacity:.7,marginTop:1}}>{t.timing} después</div>
+                    <div key={i} onClick={()=>{setTab(i);setCopied(false);}} style={{flex:1,padding:"13px 8px",textAlign:"center",cursor:"pointer",background:tab===i?"#fff":"transparent",color:tab===i?C.primario:"#9ca3af",borderRight:i<2?"1px solid #e5e7eb":"none",fontSize:12,fontWeight:tab===i?700:400,transition:"all .2s",borderBottom:tab===i?"2.5px solid "+C.secundario:"2.5px solid transparent"}}>
+                      <div style={{fontSize:18,marginBottom:4}}>{t.icon}</div>
+                      <div>{t.label}</div>
+                      <div style={{fontSize:10,opacity:.55,marginTop:2}}>{t.timing} después</div>
                     </div>
                   ))}
                 </div>
-                <div style={{background:"#fff",border:"1px solid "+C.medio,borderTop:"none",padding:"22px 24px"}}>
-                  <div style={{marginBottom:14,paddingBottom:12,borderBottom:"1px solid "+C.fondo}}>
-                    <div style={{fontSize:10,textTransform:"uppercase",color:C.secundario,marginBottom:4}}>Asunto</div>
-                    <div style={{fontSize:16,color:"#111",fontWeight:"bold"}}>{emails[tab].subject}</div>
+                <div style={{background:"#fff",border:"1px solid #e5e7eb",borderTop:"none",borderRadius:"0 0 8px 8px",padding:"24px 26px",boxShadow:"0 4px 14px rgba(0,0,0,.05)"}}>
+                  <div style={{marginBottom:16,paddingBottom:14,borderBottom:"1px solid #f1f5f9"}}>
+                    <div style={{fontSize:11,textTransform:"uppercase",color:C.secundario,marginBottom:5,fontWeight:600,letterSpacing:".08em"}}>Asunto</div>
+                    <div style={{fontSize:16,color:"#111",fontWeight:700,lineHeight:1.4}}>{emails[tab].subject}</div>
                   </div>
-                  <pre style={{fontSize:14,color:"#374151",lineHeight:1.85,whiteSpace:"pre-wrap",fontFamily:"Georgia,serif",margin:0}}>{emails[tab].body}</pre>
-                  <div style={{marginTop:20,borderTop:"1px solid "+C.fondo,paddingTop:16}}>
-                    <div style={{display:"flex",gap:8,marginBottom:12}}>
-                      <button onClick={copiar} style={{background:"transparent",border:"1px solid "+C.medio,color:C.primario,padding:"8px 16px",fontSize:11,textTransform:"uppercase"}}>{copied?"✓ Copiado":"Copiar email"}</button>
+                  <pre style={{fontSize:14,color:"#374151",lineHeight:1.9,whiteSpace:"pre-wrap",fontFamily:"Georgia,serif",margin:0}}>{emails[tab].body}</pre>
+                  <div style={{marginTop:22,borderTop:"1px solid #f1f5f9",paddingTop:18}}>
+                    <div style={{display:"flex",gap:10,marginBottom:16}}>
+                      <button onClick={copiar} style={{background:"#fff",border:"1.5px solid #e5e7eb",color:C.primario,padding:"9px 18px",fontSize:12,fontWeight:600,borderRadius:6}}>{copied?"✓ Copiado":"Copiar email"}</button>
                       {(cliSel?.email||mEmail) && (
-                        <button onClick={()=>{const e=emails[tab];window.open("https://mail.google.com/mail/?view=cm&to="+encodeURIComponent(cliSel?.email||mEmail)+"&su="+encodeURIComponent(e.subject)+"&body="+encodeURIComponent(e.body),"_blank");}} style={{background:"#ea4335",color:"#fff",border:"none",padding:"8px 16px",fontSize:11,textTransform:"uppercase"}}>✉️ Abrir en Gmail</button>
+                        <button onClick={()=>{const e=emails[tab];window.open("https://mail.google.com/mail/?view=cm&to="+encodeURIComponent(cliSel?.email||mEmail)+"&su="+encodeURIComponent(e.subject)+"&body="+encodeURIComponent(e.body),"_blank");}} style={{background:"#ea4335",color:"#fff",border:"none",padding:"9px 18px",fontSize:12,fontWeight:600,borderRadius:6}}>✉️ Abrir en Gmail</button>
                       )}
                     </div>
-                    <div style={{background:C.suave,border:"1px solid "+C.medio,padding:"14px 16px"}}>
-                      <div style={{fontSize:11,textTransform:"uppercase",color:C.primario,fontWeight:"bold",marginBottom:8}}>🤖 Programar envío automático</div>
-                      <div style={{fontSize:12,color:"#4b5563",marginBottom:12}}>El servidor envía los 3 emails solo: 1h · 24h · 72h después del abandono</div>
-                      <button onClick={programar} disabled={progLoad} style={{background:C.primario,color:"#fff",border:"none",padding:"10px 22px",fontSize:12,textTransform:"uppercase",opacity:progLoad?0.6:1}}>
+                    <div style={{background:C.suave,border:"1px solid "+C.medio,padding:"18px 20px",borderRadius:8}}>
+                      <div style={{fontSize:11,textTransform:"uppercase",color:C.primario,fontWeight:700,marginBottom:6,letterSpacing:".08em"}}>🤖 Envío automático</div>
+                      <div style={{fontSize:13,color:"#4b5563",marginBottom:14,lineHeight:1.6}}>El servidor envía los 3 emails solo: <strong>1h · 24h · 72h</strong> después del abandono</div>
+                      <button onClick={programar} disabled={progLoad} style={{background:C.primario,color:"#fff",border:"none",padding:"10px 22px",fontSize:13,fontWeight:600,borderRadius:6,opacity:progLoad?0.6:1}}>
                         {progLoad?"Programando...":"Programar envío →"}
                       </button>
-                      {progOk && <div style={{marginTop:10,padding:"8px 12px",background:"#dcfce7",color:"#166534",fontSize:12}}>{progOk}</div>}
-                      {progErr && <div style={{marginTop:10,padding:"8px 12px",background:"#fee2e2",color:"#b91c1c",fontSize:12}}>⚠ {progErr}</div>}
+                      {progOk && <div style={{marginTop:12,padding:"10px 14px",background:"#dcfce7",color:"#166534",fontSize:12,borderRadius:6,fontWeight:500}}>{progOk}</div>}
+                      {progErr && <div style={{marginTop:12,padding:"10px 14px",background:"#fee2e2",color:"#b91c1c",fontSize:12,borderRadius:6,fontWeight:500}}>⚠ {progErr}</div>}
                     </div>
                   </div>
                 </div>
