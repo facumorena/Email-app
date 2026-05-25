@@ -8,8 +8,120 @@
 <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
 <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
 <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<style>
+/* ── RESET & BASE ──────────────────────────────────────────────── */
+*{box-sizing:border-box}
+body{margin:0;padding:0;background:#f1f5f9;font-family:'Inter',sans-serif}
+
+/* ── APP HEADER ────────────────────────────────────────────────── */
+.app-hdr{
+  display:flex;align-items:stretch;
+  height:58px;padding:0 24px;
+  box-shadow:0 2px 10px rgba(0,0,0,.15)
+}
+.hdr-brand{
+  display:flex;align-items:center;gap:11px;
+  flex-shrink:0;margin-right:20px;padding-right:20px;
+  border-right:1px solid rgba(255,255,255,.12)
+}
+.brand-sub{display:block}
+.desk-nav{display:flex;align-items:stretch;gap:2px;overflow-x:auto}
+.hdr-space{flex:1}
+
+/* ── PAGE LAYOUT ───────────────────────────────────────────────── */
+.page-wrap{max-width:820px;margin:0 auto;padding:28px 24px}
+
+/* ── STATS GRID ────────────────────────────────────────────────── */
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
+
+/* ── FORM 2-COL GRID ───────────────────────────────────────────── */
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+
+/* ── TABLE SCROLL WRAPPER ──────────────────────────────────────── */
+.tbl-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;border-radius:8px;box-shadow:0 1px 3px rgba(0,0,0,.06),0 4px 14px rgba(0,0,0,.05)}
+.tbl-body{min-width:480px;background:#fff;border-radius:8px;overflow:hidden}
+
+/* ── EMAIL ACTIONS ─────────────────────────────────────────────── */
+.email-actions{display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap}
+.email-pre{font-size:14px;color:#374151;line-height:1.9;white-space:pre-wrap;font-family:Georgia,serif;margin:0}
+
+/* ── MOBILE BOTTOM NAV ─────────────────────────────────────────── */
+.mob-nav{
+  display:none;
+  position:fixed;bottom:0;left:0;right:0;
+  background:#fff;
+  border-top:1.5px solid #e5e7eb;
+  z-index:200;
+  padding-bottom:env(safe-area-inset-bottom,0px)
+}
+.mob-nav-inner{display:flex}
+.mnb{
+  flex:1;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  padding:9px 4px 7px;border:none;background:none;
+  font-family:'Inter',sans-serif;
+  font-size:9.5px;font-weight:500;
+  color:#9ca3af;cursor:pointer;gap:3px;
+  transition:color .15s;min-height:54px;
+  -webkit-tap-highlight-color:transparent
+}
+.mnb.act{font-weight:700}
+.mnb-ic{font-size:20px;line-height:1.2}
+
+/* ── MODAL ─────────────────────────────────────────────────────── */
+.modal-bd{
+  display:flex;align-items:center;justify-content:center;
+  padding:20px
+}
+.modal-box{
+  background:#0f1f17;
+  border:1px solid rgba(82,183,136,.22);
+  padding:32px 28px;
+  width:100%;max-width:440px;
+  animation:mIn .28s cubic-bezier(.16,1,.3,1);
+  max-height:90vh;overflow-y:auto;
+  border-radius:12px
+}
+
+/* ── BREAKPOINT: TABLET 641–860px ─────────────────────────────── */
+@media(max-width:860px){
+  .page-wrap{padding:22px 18px}
+  .stats-grid{grid-template-columns:repeat(2,1fr)}
+}
+
+/* ── BREAKPOINT: MOBILE ≤ 640px ───────────────────────────────── */
+@media(max-width:640px){
+  .app-hdr{padding:0 14px;height:52px}
+  .hdr-brand{margin-right:0;padding-right:0;border-right:none}
+  .brand-sub{display:none}
+  .desk-nav{display:none}
+  .hdr-space{display:none}
+  .mob-nav{display:block}
+  .page-wrap{padding:14px 12px 78px}
+  .stats-grid{grid-template-columns:repeat(2,1fr);gap:10px}
+  .form-grid{grid-template-columns:1fr}
+  .hide-mob{display:none!important}
+  .modal-bd{
+    align-items:flex-end;
+    padding:0
+  }
+  .modal-box{
+    max-width:100%;
+    max-height:92dvh;
+    border-radius:20px 20px 0 0;
+    padding:24px 18px
+  }
+  .email-pre{font-size:13px!important;line-height:1.75!important}
+}
+
+/* ── BREAKPOINT: SMALL MOBILE ≤ 400px ─────────────────────────── */
+@media(max-width:400px){
+  .stats-grid{gap:8px}
+  .page-wrap{padding:12px 10px 78px}
+}
+</style>
 </head>
-<body style="margin:0;padding:0;background:#f1f5f9">
+<body>
 <div id="root"></div>
 <script type="text/babel">
 const { useState, useEffect } = React;
@@ -143,8 +255,8 @@ function LoginScreen({ onLogin, empresas, onAgregarEmpresa }) {
     setSelId(id); setModal(false);
     setNNombre(""); setNWeb(""); setNDesc(""); setNPass(""); setNLibre(false); setNPaleta(0); setNEmoji("🏪"); setNErr("");
   }
-  const inp = { width:"100%", padding:"11px 14px", background:"rgba(255,255,255,.07)", border:"1.5px solid rgba(255,255,255,.14)", color:"#fff", fontSize:14, boxSizing:"border-box", fontFamily:"'Inter',sans-serif", borderRadius:7, transition:"border-color .15s" };
-  const inpDark = { width:"100%", padding:"10px 13px", background:"rgba(255,255,255,.05)", border:"1.5px solid rgba(255,255,255,.12)", color:"#fff", fontSize:14, boxSizing:"border-box", fontFamily:"'Inter',sans-serif", borderRadius:7 };
+  const inp = { width:"100%", padding:"11px 14px", background:"rgba(255,255,255,.07)", border:"1.5px solid rgba(255,255,255,.14)", color:"#fff", fontSize:14, fontFamily:"'Inter',sans-serif", borderRadius:7, transition:"border-color .15s" };
+  const inpDark = { width:"100%", padding:"10px 13px", background:"rgba(255,255,255,.05)", border:"1.5px solid rgba(255,255,255,.12)", color:"#fff", fontSize:14, fontFamily:"'Inter',sans-serif", borderRadius:7 };
   return (
     <div style={{minHeight:"100vh",display:"flex",alignItems:"center",justifyContent:"center",background:"linear-gradient(135deg,#0c1a12 0%,#162d1f 50%,#0c1a12 100%)",fontFamily:"'Inter',sans-serif",padding:20}}>
       <style>{`
@@ -157,7 +269,6 @@ function LoginScreen({ onLogin, empresas, onAgregarEmpresa }) {
         .lbtn{transition:all .2s}
         input:focus,textarea:focus{outline:none;border-color:rgba(82,183,136,.75)!important;box-shadow:0 0 0 3px rgba(82,183,136,.15)!important}
         button{cursor:pointer}
-        *{box-sizing:border-box}
         ::-webkit-scrollbar{width:5px}
         ::-webkit-scrollbar-thumb{background:rgba(255,255,255,.15);border-radius:3px}
       `}</style>
@@ -198,8 +309,8 @@ function LoginScreen({ onLogin, empresas, onAgregarEmpresa }) {
       </div>
 
       {modal && (
-        <div onClick={()=>setModal(false)} style={{position:"fixed",inset:0,background:"rgba(0,0,0,.75)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:1000,padding:20}}>
-          <div onClick={e=>e.stopPropagation()} style={{background:"#0f1f17",border:"1px solid rgba(82,183,136,.22)",padding:"32px 28px",width:"100%",maxWidth:440,animation:"mIn .28s cubic-bezier(.16,1,.3,1)",maxHeight:"90vh",overflowY:"auto",borderRadius:12}}>
+        <div onClick={()=>setModal(false)} className="modal-bd" style={{position:"fixed",inset:0,background:"rgba(0,0,0,.75)",zIndex:1000}}>
+          <div onClick={e=>e.stopPropagation()} className="modal-box">
             <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:22}}>
               <div style={{color:"#fff",fontSize:16,fontWeight:700}}>+ Nueva empresa</div>
               <button onClick={()=>setModal(false)} style={{background:"rgba(255,255,255,.08)",border:"none",color:"rgba(255,255,255,.45)",fontSize:15,width:30,height:30,borderRadius:6,display:"flex",alignItems:"center",justifyContent:"center",fontFamily:"'Inter',sans-serif"}}>✕</button>
@@ -345,14 +456,14 @@ function AppPrincipal({ empresa, onLogout, onActualizarClientes }) {
   }
   function delCliente(id) { onActualizarClientes(empresa.id, empresa.clientes.filter(c=>c.id!==id)); }
 
-  const IS = { width:"100%", padding:"10px 13px", border:"1.5px solid #e5e7eb", background:"#fff", fontSize:14, color:"#111", boxSizing:"border-box", fontFamily:"'Inter',sans-serif", borderRadius:7, transition:"border-color .15s" };
+  const IS = { width:"100%", padding:"10px 13px", border:"1.5px solid #e5e7eb", background:"#fff", fontSize:14, color:"#111", fontFamily:"'Inter',sans-serif", borderRadius:7, transition:"border-color .15s" };
   const TABS = [{label:"Email 1",timing:"1 hora",icon:"📬"},{label:"Email 2",timing:"24 horas",icon:"🔔"},{label:"Email 3",timing:"72 horas",icon:"⏳"}];
   const stats = { total:empresa.clientes.length, frecuentes:empresa.clientes.filter(c=>c.tipo==="frecuente").length, activos:empresa.clientes.filter(c=>c.tipo==="activo").length, potenciales:empresa.clientes.filter(c=>c.tipo==="potencial").length };
 
   const NAV = [
     {k:"generar",label:"Emails",icon:"✉️"},
     {k:"clientes",label:"Clientes",icon:"👥"},
-    {k:"basedatos",label:"Base de datos",icon:"📂"},
+    {k:"basedatos",label:"Base",icon:"📂"},
     {k:"cola",label:"Cola",icon:"📊"},
     {k:"resultados",label:"Resultados",icon:"💰"},
   ];
@@ -367,40 +478,52 @@ function AppPrincipal({ empresa, onLogout, onActualizarClientes }) {
         ::-webkit-scrollbar{width:5px}
         ::-webkit-scrollbar-thumb{background:#d1d5db;border-radius:3px}
         button{cursor:pointer;transition:opacity .15s,transform .15s,background .15s}
-        *{box-sizing:border-box}
         .nav-btn:hover{background:rgba(255,255,255,.12)!important}
         .tbtn:hover{opacity:.85}
+        .mnb:active{opacity:.7}
       `}</style>
 
       {/* ─── HEADER ─────────────────────────────────────────────────── */}
-      <div style={{background:C.primario,padding:"0 24px",display:"flex",alignItems:"stretch",height:58,boxShadow:"0 2px 10px rgba(0,0,0,.15)"}}>
-        <div style={{display:"flex",alignItems:"center",gap:11,marginRight:24,paddingRight:24,borderRight:"1px solid rgba(255,255,255,.12)"}}>
+      <div className="app-hdr" style={{background:C.primario}}>
+        <div className="hdr-brand">
           <div style={{width:34,height:34,borderRadius:9,background:"rgba(255,255,255,.15)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:16,flexShrink:0}}>{empresa.emoji}</div>
-          <div>
+          <div className="brand-text">
             <div style={{color:"#fff",fontWeight:700,fontSize:13.5,letterSpacing:"-.01em",lineHeight:1.2}}>{empresa.nombre}</div>
-            <div style={{color:"rgba(255,255,255,.4)",fontSize:10,letterSpacing:".05em",marginTop:2}}>{empresa.web}</div>
+            <div className="brand-sub" style={{color:"rgba(255,255,255,.4)",fontSize:10,letterSpacing:".05em",marginTop:2}}>{empresa.web}</div>
           </div>
         </div>
-        <div style={{display:"flex",alignItems:"stretch",gap:2}}>
+        <div className="desk-nav">
           {NAV.map(({k,label,icon})=>(
             <button key={k} className="nav-btn" onClick={()=>setVista(k)} style={{background:"none",border:"none",color:vista===k?"#fff":"rgba(255,255,255,.52)",fontSize:13,padding:"0 14px",borderBottom:vista===k?"2.5px solid rgba(255,255,255,.85)":"2.5px solid transparent",fontFamily:"'Inter',sans-serif",fontWeight:vista===k?600:400,display:"flex",alignItems:"center",gap:6,borderRadius:0,whiteSpace:"nowrap"}}>
               <span style={{fontSize:13}}>{icon}</span>{label}
             </button>
           ))}
         </div>
-        <div style={{flex:1}}/>
+        <div className="hdr-space"/>
         <div style={{display:"flex",alignItems:"center"}}>
-          <button className="tbtn" onClick={onLogout} style={{background:"none",border:"none",color:"rgba(255,255,255,.38)",fontSize:12,fontFamily:"'Inter',sans-serif",fontWeight:500,letterSpacing:".02em",padding:"0 4px"}}>Salir →</button>
+          <button className="tbtn" onClick={onLogout} style={{background:"none",border:"none",color:"rgba(255,255,255,.5)",fontSize:12,fontFamily:"'Inter',sans-serif",fontWeight:500,letterSpacing:".02em",padding:"0 4px",whiteSpace:"nowrap"}}>Salir →</button>
         </div>
       </div>
 
-      <div style={{maxWidth:820,margin:"0 auto",padding:"28px 24px"}}>
+      {/* ─── MOBILE BOTTOM NAV ──────────────────────────────────────── */}
+      <nav className="mob-nav">
+        <div className="mob-nav-inner">
+          {NAV.map(({k,label,icon})=>(
+            <button key={k} className={"mnb"+(vista===k?" act":"")} onClick={()=>setVista(k)} style={{color:vista===k?C.primario:"#9ca3af"}}>
+              <span className="mnb-ic">{icon}</span>
+              <span>{label}</span>
+            </button>
+          ))}
+        </div>
+      </nav>
+
+      <div className="page-wrap">
 
         {/* ─── CLIENTES ────────────────────────────────────────────── */}
         {vista==="clientes" && (
           <div style={{animation:"fi .3s"}}>
-            <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:12,marginBottom:20}}>
-              {[{label:"Total clientes",val:stats.total,color:C.primario},{label:"Frecuentes",val:stats.frecuentes,color:"#166534"},{label:"Activos",val:stats.activos,color:"#1e40af"},{label:"Potenciales",val:stats.potenciales,color:"#92400e"}].map(s=>(
+            <div className="stats-grid">
+              {[{label:"Total",val:stats.total,color:C.primario},{label:"Frecuentes",val:stats.frecuentes,color:"#166534"},{label:"Activos",val:stats.activos,color:"#1e40af"},{label:"Potenciales",val:stats.potenciales,color:"#92400e"}].map(s=>(
                 <div key={s.label} style={{background:"#fff",borderRadius:8,boxShadow:"0 1px 3px rgba(0,0,0,.06),0 4px 14px rgba(0,0,0,.05)",padding:"18px 16px",borderLeft:"4px solid "+s.color}}>
                   <div style={{fontSize:28,fontWeight:700,color:s.color,letterSpacing:"-.02em"}}>{s.val}</div>
                   <div style={{fontSize:11,color:"#9ca3af",marginTop:4,textTransform:"uppercase",letterSpacing:".06em",fontWeight:500}}>{s.label}</div>
@@ -408,19 +531,21 @@ function AppPrincipal({ empresa, onLogout, onActualizarClientes }) {
               ))}
             </div>
             <input value={busq} onChange={e=>setBusq(e.target.value)} placeholder="Buscar cliente, rubro o zona..." style={{...IS,marginBottom:10}}/>
-            <div style={{background:"#fff",borderRadius:8,boxShadow:"0 1px 3px rgba(0,0,0,.06),0 4px 14px rgba(0,0,0,.05)",overflow:"hidden"}}>
-              <div style={{display:"grid",gridTemplateColumns:"2fr 1.2fr 1fr 100px",padding:"10px 18px",background:"#f8fafc",borderBottom:"1px solid #e5e7eb",fontSize:11,letterSpacing:".1em",textTransform:"uppercase",color:"#6b7280",fontWeight:600}}>
-                <span>Cliente</span><span>Rubro</span><span>Zona</span><span>Perfil</span>
-              </div>
-              {filtrados.map((c,i)=>{ const b=TIPO_BADGE[c.tipo]||TIPO_BADGE.potencial; return (
-                <div key={c.id} className="rc" onClick={()=>selCliente(c)} style={{display:"grid",gridTemplateColumns:"2fr 1.2fr 1fr 100px",padding:"13px 18px",borderBottom:"1px solid #f1f5f9",transition:"background .12s"}}>
-                  <div><div style={{fontSize:14,color:"#111",fontWeight:500}}>{c.nombre}</div><div style={{fontSize:11,color:"#9ca3af",marginTop:2}}>{c.pedidos} pedidos</div></div>
-                  <div style={{fontSize:13,color:"#4b5563",display:"flex",alignItems:"center"}}>{c.rubro}</div>
-                  <div style={{fontSize:13,color:"#4b5563",display:"flex",alignItems:"center"}}>{c.zona}</div>
-                  <div style={{display:"flex",alignItems:"center"}}><span style={{background:b.bg,color:b.color,border:"1px solid "+b.border,fontSize:10,padding:"3px 9px",fontWeight:600,textTransform:"uppercase",borderRadius:20,letterSpacing:".04em"}}>{c.tipo}</span></div>
+            <div className="tbl-scroll">
+              <div className="tbl-body">
+                <div style={{display:"grid",gridTemplateColumns:"2fr 1.2fr 1fr 100px",padding:"10px 18px",background:"#f8fafc",borderBottom:"1px solid #e5e7eb",fontSize:11,letterSpacing:".1em",textTransform:"uppercase",color:"#6b7280",fontWeight:600}}>
+                  <span>Cliente</span><span>Rubro</span><span>Zona</span><span>Perfil</span>
                 </div>
-              );})}
-              {filtrados.length===0 && <div style={{padding:32,textAlign:"center",color:"#9ca3af",fontSize:14}}>Sin resultados.</div>}
+                {filtrados.map((c)=>{ const b=TIPO_BADGE[c.tipo]||TIPO_BADGE.potencial; return (
+                  <div key={c.id} className="rc" onClick={()=>selCliente(c)} style={{display:"grid",gridTemplateColumns:"2fr 1.2fr 1fr 100px",padding:"13px 18px",borderBottom:"1px solid #f1f5f9",transition:"background .12s"}}>
+                    <div><div style={{fontSize:14,color:"#111",fontWeight:500}}>{c.nombre}</div><div style={{fontSize:11,color:"#9ca3af",marginTop:2}}>{c.pedidos} pedidos</div></div>
+                    <div style={{fontSize:13,color:"#4b5563",display:"flex",alignItems:"center"}}>{c.rubro}</div>
+                    <div style={{fontSize:13,color:"#4b5563",display:"flex",alignItems:"center"}}>{c.zona}</div>
+                    <div style={{display:"flex",alignItems:"center"}}><span style={{background:b.bg,color:b.color,border:"1px solid "+b.border,fontSize:10,padding:"3px 9px",fontWeight:600,textTransform:"uppercase",borderRadius:20,letterSpacing:".04em"}}>{c.tipo}</span></div>
+                  </div>
+                );})}
+                {filtrados.length===0 && <div style={{padding:32,textAlign:"center",color:"#9ca3af",fontSize:14}}>Sin resultados.</div>}
+              </div>
             </div>
           </div>
         )}
@@ -429,8 +554,8 @@ function AppPrincipal({ empresa, onLogout, onActualizarClientes }) {
         {vista==="basedatos" && (
           <div style={{animation:"fi .3s"}}>
             <div style={{display:"flex",background:"#fff",borderRadius:8,padding:5,gap:4,marginBottom:20,boxShadow:"0 1px 3px rgba(0,0,0,.06),0 4px 14px rgba(0,0,0,.05)"}}>
-              {[{k:"lista",label:"Ver lista",icon:"📄",desc:empresa.clientes.length+" clientes"},{k:"csv",label:"Pegar CSV",icon:"📋"},{k:"manual",label:"Agregar cliente",icon:"＋"}].map(({k,label,icon,desc})=>(
-                <div key={k} onClick={()=>setDbTab(k)} style={{flex:1,padding:"11px 12px",cursor:"pointer",background:dbTab===k?C.primario:"transparent",color:dbTab===k?"#fff":C.primario,borderRadius:6,transition:"all .2s",textAlign:"center"}}>
+              {[{k:"lista",label:"Ver lista",icon:"📄",desc:empresa.clientes.length+" clientes"},{k:"csv",label:"Pegar CSV",icon:"📋"},{k:"manual",label:"Agregar",icon:"＋"}].map(({k,label,icon,desc})=>(
+                <div key={k} onClick={()=>setDbTab(k)} style={{flex:1,padding:"11px 10px",cursor:"pointer",background:dbTab===k?C.primario:"transparent",color:dbTab===k?"#fff":C.primario,borderRadius:6,transition:"all .2s",textAlign:"center"}}>
                   <div style={{fontWeight:600,fontSize:13}}>{icon} {label}</div>
                   {desc && <div style={{fontSize:11,opacity:.7,marginTop:3}}>{desc}</div>}
                 </div>
@@ -440,27 +565,29 @@ function AppPrincipal({ empresa, onLogout, onActualizarClientes }) {
             {dbTab==="lista" && (
               empresa.clientes.length===0
                 ? <div style={{background:"#fff",borderRadius:8,boxShadow:"0 1px 3px rgba(0,0,0,.06)",padding:40,textAlign:"center",color:"#9ca3af"}}>Sin clientes aún.</div>
-                : <div style={{background:"#fff",borderRadius:8,boxShadow:"0 1px 3px rgba(0,0,0,.06),0 4px 14px rgba(0,0,0,.05)",overflow:"hidden"}}>
-                    <div style={{display:"grid",gridTemplateColumns:"2fr 1.2fr 1fr 90px 36px",padding:"10px 18px",background:"#f8fafc",borderBottom:"1px solid #e5e7eb",fontSize:11,textTransform:"uppercase",letterSpacing:".1em",color:"#6b7280",fontWeight:600}}>
-                      <span>Nombre</span><span>Rubro</span><span>Zona</span><span>Perfil</span><span></span>
-                    </div>
-                    <div style={{maxHeight:440,overflowY:"auto"}}>
-                      {empresa.clientes.map((c,i)=>{ const b=TIPO_BADGE[c.tipo]||TIPO_BADGE.potencial; return (
-                        <div key={c.id} style={{display:"grid",gridTemplateColumns:"2fr 1.2fr 1fr 90px 36px",padding:"12px 18px",borderBottom:"1px solid #f1f5f9",alignItems:"center"}}>
-                          <div><div style={{fontSize:14,color:"#111",fontWeight:500}}>{c.nombre}</div><div style={{fontSize:11,color:"#9ca3af",marginTop:2}}>{c.pedidos} pedidos</div></div>
-                          <div style={{fontSize:13,color:"#4b5563"}}>{c.rubro}</div>
-                          <div style={{fontSize:13,color:"#4b5563"}}>{c.zona}</div>
-                          <div><span style={{background:b.bg,color:b.color,border:"1px solid "+b.border,fontSize:10,padding:"3px 9px",fontWeight:600,textTransform:"uppercase",borderRadius:20,letterSpacing:".04em"}}>{c.tipo}</span></div>
-                          <button onClick={()=>delCliente(c.id)} style={{background:"none",border:"none",color:"#d1d5db",fontSize:16,padding:0,lineHeight:1}}>&times;</button>
-                        </div>
-                      );})}
+                : <div className="tbl-scroll">
+                    <div className="tbl-body">
+                      <div style={{display:"grid",gridTemplateColumns:"2fr 1.2fr 1fr 90px 36px",padding:"10px 18px",background:"#f8fafc",borderBottom:"1px solid #e5e7eb",fontSize:11,textTransform:"uppercase",letterSpacing:".1em",color:"#6b7280",fontWeight:600}}>
+                        <span>Nombre</span><span>Rubro</span><span>Zona</span><span>Perfil</span><span></span>
+                      </div>
+                      <div style={{maxHeight:440,overflowY:"auto"}}>
+                        {empresa.clientes.map((c)=>{ const b=TIPO_BADGE[c.tipo]||TIPO_BADGE.potencial; return (
+                          <div key={c.id} style={{display:"grid",gridTemplateColumns:"2fr 1.2fr 1fr 90px 36px",padding:"12px 18px",borderBottom:"1px solid #f1f5f9",alignItems:"center"}}>
+                            <div><div style={{fontSize:14,color:"#111",fontWeight:500}}>{c.nombre}</div><div style={{fontSize:11,color:"#9ca3af",marginTop:2}}>{c.pedidos} pedidos</div></div>
+                            <div style={{fontSize:13,color:"#4b5563"}}>{c.rubro}</div>
+                            <div style={{fontSize:13,color:"#4b5563"}}>{c.zona}</div>
+                            <div><span style={{background:b.bg,color:b.color,border:"1px solid "+b.border,fontSize:10,padding:"3px 9px",fontWeight:600,textTransform:"uppercase",borderRadius:20,letterSpacing:".04em"}}>{c.tipo}</span></div>
+                            <button onClick={()=>delCliente(c.id)} style={{background:"none",border:"none",color:"#d1d5db",fontSize:16,padding:0,lineHeight:1}}>&times;</button>
+                          </div>
+                        );})}
+                      </div>
                     </div>
                   </div>
             )}
             {dbTab==="csv" && (
               <div style={{background:"#fff",borderRadius:8,boxShadow:"0 1px 3px rgba(0,0,0,.06),0 4px 14px rgba(0,0,0,.05)",padding:24}}>
                 <p style={{fontSize:13,color:"#6b7280",margin:"0 0 12px",lineHeight:1.6}}>Columnas esperadas: <code style={{background:"#f1f5f9",padding:"2px 6px",borderRadius:4,fontSize:12}}>Nombre, Rubro, Zona, Tipo, Pedidos, Email</code></p>
-                <textarea value={csvTxt} onChange={e=>{setCsvTxt(e.target.value);setCsvPrev([]);}} rows={6} placeholder={"Hereford,Cafetería,Montevideo,frecuente,8,hereford@hereford.com.uy"} style={{width:"100%",padding:"11px 13px",border:"1.5px solid #e5e7eb",fontSize:13,resize:"vertical",boxSizing:"border-box",fontFamily:"monospace",borderRadius:7}}/>
+                <textarea value={csvTxt} onChange={e=>{setCsvTxt(e.target.value);setCsvPrev([]);}} rows={6} placeholder={"Hereford,Cafetería,Montevideo,frecuente,8,hereford@hereford.com.uy"} style={{width:"100%",padding:"11px 13px",border:"1.5px solid #e5e7eb",fontSize:13,resize:"vertical",fontFamily:"monospace",borderRadius:7}}/>
                 {csvErr && <p style={{color:"#b91c1c",fontSize:12,margin:"8px 0 0",fontWeight:500}}>⚠ {csvErr}</p>}
                 {csvPrev.length>0 && <div style={{marginTop:12}}>
                   <div style={{fontSize:12,color:C.primario,marginBottom:8,fontWeight:600}}>{csvPrev.length} clientes listos para importar</div>
@@ -471,7 +598,7 @@ function AppPrincipal({ empresa, onLogout, onActualizarClientes }) {
             )}
             {dbTab==="manual" && (
               <div style={{background:"#fff",borderRadius:8,boxShadow:"0 1px 3px rgba(0,0,0,.06),0 4px 14px rgba(0,0,0,.05)",padding:24}}>
-                <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14,marginBottom:14}}>
+                <div className="form-grid">
                   {[["Nombre *",cNom,setCNom,"Ej: Café del Sur"],["Rubro",cRub,setCRub,"Ej: Cafetería"],["Zona",cZon,setCZon,"Ej: Montevideo"],["Pedidos",cPed,setCPed,"Ej: 5"],["Email",cEmail,setCEmail,"contacto@empresa.com"]].map(([lbl,val,set,ph])=>(
                     <div key={lbl}><div style={{fontSize:11,textTransform:"uppercase",color:"#6b7280",marginBottom:6,fontWeight:600,letterSpacing:".07em"}}>{lbl}</div><input value={val} onChange={e=>set(e.target.value)} placeholder={ph} style={IS}/></div>
                   ))}
@@ -498,7 +625,7 @@ function AppPrincipal({ empresa, onLogout, onActualizarClientes }) {
             <div style={{fontSize:18,fontWeight:700,color:"#111",marginBottom:20,letterSpacing:"-.02em"}}>📊 Cola de envío automático</div>
             {cola ? (
               <>
-                <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:12,marginBottom:20}}>
+                <div className="stats-grid">
                   {[{label:"Registrados",val:cola.stats.total,color:C.primario},{label:"Email 1 enviados",val:cola.stats.e1||0,color:"#166534"},{label:"Email 2 enviados",val:cola.stats.e2||0,color:"#1e40af"},{label:"Email 3 enviados",val:cola.stats.e3||0,color:"#92400e"}].map(s=>(
                     <div key={s.label} style={{background:"#fff",borderRadius:8,boxShadow:"0 1px 3px rgba(0,0,0,.06),0 4px 14px rgba(0,0,0,.05)",padding:"18px 16px",borderLeft:"4px solid "+s.color}}>
                       <div style={{fontSize:28,fontWeight:700,color:s.color,letterSpacing:"-.02em"}}>{s.val}</div>
@@ -508,22 +635,24 @@ function AppPrincipal({ empresa, onLogout, onActualizarClientes }) {
                 </div>
                 {cola.queue.length===0
                   ? <div style={{background:"#fff",borderRadius:8,boxShadow:"0 1px 3px rgba(0,0,0,.06)",padding:40,textAlign:"center",color:"#9ca3af",fontSize:14}}>Sin carritos registrados aún.</div>
-                  : <div style={{background:"#fff",borderRadius:8,boxShadow:"0 1px 3px rgba(0,0,0,.06),0 4px 14px rgba(0,0,0,.05)",overflow:"hidden"}}>
-                      <div style={{display:"grid",gridTemplateColumns:"2fr 1.4fr 70px 70px 70px",padding:"10px 18px",background:"#f8fafc",borderBottom:"1px solid #e5e7eb",fontSize:11,textTransform:"uppercase",letterSpacing:".1em",color:"#6b7280",fontWeight:600}}>
-                        <span>Cliente</span><span>Empresa</span><span style={{textAlign:"center"}}>E1</span><span style={{textAlign:"center"}}>E2</span><span style={{textAlign:"center"}}>E3</span>
-                      </div>
-                      <div style={{maxHeight:420,overflowY:"auto"}}>
-                        {cola.queue.map((r,i)=>(
-                          <div key={r.id} style={{display:"grid",gridTemplateColumns:"2fr 1.4fr 70px 70px 70px",padding:"13px 18px",borderBottom:"1px solid #f1f5f9",alignItems:"center"}}>
-                            <div><div style={{fontSize:13,color:"#111",fontWeight:500}}>{r.client_name}</div><div style={{fontSize:11,color:"#9ca3af",marginTop:2}}>{r.client_email}</div></div>
-                            <div style={{fontSize:12,color:"#4b5563",fontWeight:500}}>{r.company_nombre}</div>
-                            {[r.email_1_sent,r.email_2_sent,r.email_3_sent].map((s,j)=>(
-                              <div key={j} style={{textAlign:"center"}}>
-                                <span style={{display:"inline-block",width:22,height:22,borderRadius:"50%",background:s?"#dcfce7":"#f1f5f9",border:"1.5px solid "+(s?"#86efac":"#e5e7eb"),fontSize:11,lineHeight:"20px",color:s?"#166534":"#9ca3af"}}>{s?"✓":"·"}</span>
-                              </div>
-                            ))}
-                          </div>
-                        ))}
+                  : <div className="tbl-scroll">
+                      <div className="tbl-body">
+                        <div style={{display:"grid",gridTemplateColumns:"2fr 1.4fr 70px 70px 70px",padding:"10px 18px",background:"#f8fafc",borderBottom:"1px solid #e5e7eb",fontSize:11,textTransform:"uppercase",letterSpacing:".1em",color:"#6b7280",fontWeight:600}}>
+                          <span>Cliente</span><span>Empresa</span><span style={{textAlign:"center"}}>E1</span><span style={{textAlign:"center"}}>E2</span><span style={{textAlign:"center"}}>E3</span>
+                        </div>
+                        <div style={{maxHeight:420,overflowY:"auto"}}>
+                          {cola.queue.map((r)=>(
+                            <div key={r.id} style={{display:"grid",gridTemplateColumns:"2fr 1.4fr 70px 70px 70px",padding:"13px 18px",borderBottom:"1px solid #f1f5f9",alignItems:"center"}}>
+                              <div><div style={{fontSize:13,color:"#111",fontWeight:500}}>{r.client_name}</div><div style={{fontSize:11,color:"#9ca3af",marginTop:2}}>{r.client_email}</div></div>
+                              <div style={{fontSize:12,color:"#4b5563",fontWeight:500}}>{r.company_nombre}</div>
+                              {[r.email_1_sent,r.email_2_sent,r.email_3_sent].map((s,j)=>(
+                                <div key={j} style={{textAlign:"center"}}>
+                                  <span style={{display:"inline-block",width:22,height:22,borderRadius:"50%",background:s?"#dcfce7":"#f1f5f9",border:"1.5px solid "+(s?"#86efac":"#e5e7eb"),fontSize:11,lineHeight:"20px",color:s?"#166534":"#9ca3af"}}>{s?"✓":"·"}</span>
+                                </div>
+                              ))}
+                            </div>
+                          ))}
+                        </div>
                       </div>
                     </div>
                 }
@@ -535,7 +664,7 @@ function AppPrincipal({ empresa, onLogout, onActualizarClientes }) {
         {/* ─── RESULTADOS ──────────────────────────────────────────── */}
         {vista==="resultados" && (
           <div style={{animation:"fi .3s"}}>
-            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:22}}>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:22,flexWrap:"wrap",gap:10}}>
               <div style={{fontSize:18,fontWeight:700,color:"#111",letterSpacing:"-.02em"}}>💰 Resultados de recuperación</div>
               <button onClick={()=>fetch("/api/dashboard").then(r=>r.json()).then(d=>{setCola(d);setResultados(d);})} style={{background:"#fff",border:"1.5px solid #e5e7eb",color:C.primario,padding:"8px 18px",fontSize:12,fontWeight:600,borderRadius:6,boxShadow:"0 1px 3px rgba(0,0,0,.06)"}}>↻ Actualizar</button>
             </div>
@@ -545,12 +674,12 @@ function AppPrincipal({ empresa, onLogout, onActualizarClientes }) {
               const maxMonto = resultados.byMonth?.length ? Math.max(...resultados.byMonth.map(m=>m.monto||0), 1) : 1;
               return (
                 <>
-                  <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:12,marginBottom:22}}>
+                  <div className="stats-grid">
                     {[
-                      {label:"Carritos registrados", val:s.total,                                      color:C.primario, icon:"🛒"},
-                      {label:"Ventas recuperadas",   val:s.recovered||0,                               color:"#16a34a",  icon:"✅"},
-                      {label:"Tasa de recuperación", val:tasa+"%",                                     color:"#2563eb",  icon:"📈"},
-                      {label:"Ingresos recuperados", val:"$"+(s.revenue_recovered||0).toLocaleString("es-UY"), color:"#d97706", icon:"💵"},
+                      {label:"Carritos",         val:s.total,                                           color:C.primario, icon:"🛒"},
+                      {label:"Recuperadas",       val:s.recovered||0,                                    color:"#16a34a",  icon:"✅"},
+                      {label:"Tasa",              val:tasa+"%",                                          color:"#2563eb",  icon:"📈"},
+                      {label:"Ingresos",          val:"$"+(s.revenue_recovered||0).toLocaleString("es-UY"), color:"#d97706", icon:"💵"},
                     ].map(k=>(
                       <div key={k.label} style={{background:"#fff",borderRadius:8,boxShadow:"0 1px 3px rgba(0,0,0,.06),0 4px 14px rgba(0,0,0,.05)",padding:"20px 16px",borderLeft:"4px solid "+k.color}}>
                         <div style={{fontSize:13,marginBottom:10}}>{k.icon}</div>
@@ -576,32 +705,36 @@ function AppPrincipal({ empresa, onLogout, onActualizarClientes }) {
                     </div>
                   )}
 
-                  <div style={{background:"#fff",borderRadius:8,boxShadow:"0 1px 3px rgba(0,0,0,.06),0 4px 14px rgba(0,0,0,.05)",overflow:"hidden",marginBottom:14}}>
-                    <div style={{padding:"13px 18px",background:C.primario,color:"#fff",fontSize:12,fontWeight:600,textTransform:"uppercase",letterSpacing:".08em"}}>
-                      Historial de ventas recuperadas
-                    </div>
-                    {(resultados.queue||[]).filter(r=>r.recovered).length === 0
-                      ? <div style={{padding:40,textAlign:"center",color:"#9ca3af",fontSize:14,lineHeight:1.8}}>
-                          Aún no hay ventas recuperadas.<br/>
-                          <span style={{fontSize:12,color:"#d1d5db"}}>Cuando un cliente complete una compra después de recibir un email, aparecerá acá.</span>
-                        </div>
-                      : <div style={{maxHeight:380,overflowY:"auto"}}>
-                          <div style={{display:"grid",gridTemplateColumns:"2fr 1.4fr 1fr 100px",padding:"10px 18px",background:"#f8fafc",borderBottom:"1px solid #e5e7eb",fontSize:11,textTransform:"uppercase",letterSpacing:".1em",color:"#6b7280",fontWeight:600}}>
-                            <span>Cliente</span><span>Empresa</span><span>Fecha</span><span style={{textAlign:"right"}}>Monto</span>
+                  <div className="tbl-scroll" style={{marginBottom:14}}>
+                    <div className="tbl-body">
+                      <div style={{padding:"13px 18px",background:C.primario,color:"#fff",fontSize:12,fontWeight:600,textTransform:"uppercase",letterSpacing:".08em"}}>
+                        Historial de ventas recuperadas
+                      </div>
+                      {(resultados.queue||[]).filter(r=>r.recovered).length === 0
+                        ? <div style={{padding:40,textAlign:"center",color:"#9ca3af",fontSize:14,lineHeight:1.8,background:"#fff"}}>
+                            Aún no hay ventas recuperadas.<br/>
+                            <span style={{fontSize:12,color:"#d1d5db"}}>Cuando un cliente complete una compra después de recibir un email, aparecerá acá.</span>
                           </div>
-                          {(resultados.queue||[]).filter(r=>r.recovered).map((r,i)=>(
-                            <div key={r.id} style={{display:"grid",gridTemplateColumns:"2fr 1.4fr 1fr 100px",padding:"13px 18px",borderBottom:"1px solid #f1f5f9",alignItems:"center"}}>
-                              <div>
-                                <div style={{fontSize:13,color:"#111",fontWeight:500}}>{r.client_name}</div>
-                                <div style={{fontSize:11,color:"#9ca3af",marginTop:2}}>{r.client_email}</div>
-                              </div>
-                              <div style={{fontSize:12,color:"#4b5563",fontWeight:500}}>{r.company_nombre}</div>
-                              <div style={{fontSize:11,color:"#6b7280"}}>{r.recovered_at ? new Date(r.recovered_at*1000).toLocaleDateString("es-UY") : "—"}</div>
-                              <div style={{fontSize:13,fontWeight:700,color:"#16a34a",textAlign:"right"}}>${(r.order_value||0).toLocaleString("es-UY")}</div>
+                        : <>
+                            <div style={{display:"grid",gridTemplateColumns:"2fr 1.4fr 1fr 100px",padding:"10px 18px",background:"#f8fafc",borderBottom:"1px solid #e5e7eb",fontSize:11,textTransform:"uppercase",letterSpacing:".1em",color:"#6b7280",fontWeight:600}}>
+                              <span>Cliente</span><span>Empresa</span><span>Fecha</span><span style={{textAlign:"right"}}>Monto</span>
                             </div>
-                          ))}
-                        </div>
-                    }
+                            <div style={{maxHeight:380,overflowY:"auto",background:"#fff"}}>
+                              {(resultados.queue||[]).filter(r=>r.recovered).map((r)=>(
+                                <div key={r.id} style={{display:"grid",gridTemplateColumns:"2fr 1.4fr 1fr 100px",padding:"13px 18px",borderBottom:"1px solid #f1f5f9",alignItems:"center"}}>
+                                  <div>
+                                    <div style={{fontSize:13,color:"#111",fontWeight:500}}>{r.client_name}</div>
+                                    <div style={{fontSize:11,color:"#9ca3af",marginTop:2}}>{r.client_email}</div>
+                                  </div>
+                                  <div style={{fontSize:12,color:"#4b5563",fontWeight:500}}>{r.company_nombre}</div>
+                                  <div style={{fontSize:11,color:"#6b7280"}}>{r.recovered_at ? new Date(r.recovered_at*1000).toLocaleDateString("es-UY") : "—"}</div>
+                                  <div style={{fontSize:13,fontWeight:700,color:"#16a34a",textAlign:"right"}}>${(r.order_value||0).toLocaleString("es-UY")}</div>
+                                </div>
+                              ))}
+                            </div>
+                          </>
+                      }
+                    </div>
                   </div>
 
                   <div style={{padding:"16px 18px",background:"#f8fafc",border:"1px solid #e5e7eb",fontSize:12,color:"#6b7280",lineHeight:1.9,borderRadius:8}}>
@@ -619,8 +752,8 @@ function AppPrincipal({ empresa, onLogout, onActualizarClientes }) {
           <div style={{animation:"fi .3s"}}>
             <div style={{display:"flex",background:"#fff",borderRadius:8,padding:5,gap:4,marginBottom:20,boxShadow:"0 1px 3px rgba(0,0,0,.06),0 4px 14px rgba(0,0,0,.05)"}}>
               {[{k:"db",label:"Desde base de clientes",icon:"👥"},{k:"manual",label:"Ingreso manual",icon:"✏️"}].map(({k,label,icon})=>(
-                <div key={k} onClick={()=>{setModo(k);setEmails(null);setCliSel(null);setProgOk("");setProgErr("");}} style={{flex:1,padding:"11px 16px",cursor:"pointer",background:modo===k?C.primario:"transparent",color:modo===k?"#fff":C.primario,fontSize:13,fontWeight:600,borderRadius:6,display:"flex",alignItems:"center",gap:7,justifyContent:"center",transition:"all .2s"}}>
-                  <span>{icon}</span>{label}
+                <div key={k} onClick={()=>{setModo(k);setEmails(null);setCliSel(null);setProgOk("");setProgErr("");}} style={{flex:1,padding:"11px 10px",cursor:"pointer",background:modo===k?C.primario:"transparent",color:modo===k?"#fff":C.primario,fontSize:13,fontWeight:600,borderRadius:6,display:"flex",alignItems:"center",gap:7,justifyContent:"center",transition:"all .2s",textAlign:"center"}}>
+                  <span>{icon}</span><span>{label}</span>
                 </div>
               ))}
             </div>
@@ -628,20 +761,22 @@ function AppPrincipal({ empresa, onLogout, onActualizarClientes }) {
             {modo==="db" && (
               <div style={{marginBottom:18}}>
                 <input value={busq} onChange={e=>setBusq(e.target.value)} placeholder="Buscar cliente..." style={{...IS,marginBottom:10}}/>
-                <div style={{background:"#fff",borderRadius:8,boxShadow:"0 1px 3px rgba(0,0,0,.06),0 4px 14px rgba(0,0,0,.05)",overflow:"hidden",maxHeight:280}}>
-                  <div style={{display:"grid",gridTemplateColumns:"2fr 1.2fr 1fr 100px",padding:"10px 18px",background:"#f8fafc",borderBottom:"1px solid #e5e7eb",fontSize:11,textTransform:"uppercase",letterSpacing:".1em",color:"#6b7280",fontWeight:600,position:"sticky",top:0}}>
-                    <span>Cliente</span><span>Rubro</span><span>Zona</span><span>Perfil</span>
-                  </div>
-                  <div style={{overflowY:"auto",maxHeight:240}}>
-                    {filtrados.map((c)=>{ const b=TIPO_BADGE[c.tipo]||TIPO_BADGE.potencial; const sel=cliSel?.id===c.id; return (
-                      <div key={c.id} className={"rc"+(sel?" rc-sel":"")} onClick={()=>selCliente(c)} style={{display:"grid",gridTemplateColumns:"2fr 1.2fr 1fr 100px",padding:"12px 18px",borderBottom:"1px solid #f1f5f9",transition:"background .12s",borderLeft:sel?"3px solid "+C.primario:"3px solid transparent"}}>
-                        <div><div style={{fontSize:14,color:"#111",fontWeight:sel?600:500}}>{c.nombre}</div><div style={{fontSize:11,color:"#9ca3af",marginTop:2}}>{c.pedidos} pedidos</div></div>
-                        <div style={{fontSize:13,color:"#4b5563",display:"flex",alignItems:"center"}}>{c.rubro}</div>
-                        <div style={{fontSize:13,color:"#4b5563",display:"flex",alignItems:"center"}}>{c.zona}</div>
-                        <div style={{display:"flex",alignItems:"center"}}><span style={{background:b.bg,color:b.color,border:"1px solid "+b.border,fontSize:10,padding:"3px 9px",fontWeight:600,textTransform:"uppercase",borderRadius:20,letterSpacing:".04em"}}>{c.tipo}</span></div>
-                      </div>
-                    );})}
-                    {filtrados.length===0 && <div style={{padding:24,textAlign:"center",color:"#9ca3af",fontSize:13}}>Sin resultados.</div>}
+                <div className="tbl-scroll">
+                  <div className="tbl-body" style={{maxHeight:280}}>
+                    <div style={{display:"grid",gridTemplateColumns:"2fr 1.2fr 1fr 100px",padding:"10px 18px",background:"#f8fafc",borderBottom:"1px solid #e5e7eb",fontSize:11,textTransform:"uppercase",letterSpacing:".1em",color:"#6b7280",fontWeight:600,position:"sticky",top:0}}>
+                      <span>Cliente</span><span>Rubro</span><span>Zona</span><span>Perfil</span>
+                    </div>
+                    <div style={{overflowY:"auto",maxHeight:240}}>
+                      {filtrados.map((c)=>{ const b=TIPO_BADGE[c.tipo]||TIPO_BADGE.potencial; const sel=cliSel?.id===c.id; return (
+                        <div key={c.id} className={"rc"+(sel?" rc-sel":"")} onClick={()=>selCliente(c)} style={{display:"grid",gridTemplateColumns:"2fr 1.2fr 1fr 100px",padding:"12px 18px",borderBottom:"1px solid #f1f5f9",transition:"background .12s",borderLeft:sel?"3px solid "+C.primario:"3px solid transparent"}}>
+                          <div><div style={{fontSize:14,color:"#111",fontWeight:sel?600:500}}>{c.nombre}</div><div style={{fontSize:11,color:"#9ca3af",marginTop:2}}>{c.pedidos} pedidos</div></div>
+                          <div style={{fontSize:13,color:"#4b5563",display:"flex",alignItems:"center"}}>{c.rubro}</div>
+                          <div style={{fontSize:13,color:"#4b5563",display:"flex",alignItems:"center"}}>{c.zona}</div>
+                          <div style={{display:"flex",alignItems:"center"}}><span style={{background:b.bg,color:b.color,border:"1px solid "+b.border,fontSize:10,padding:"3px 9px",fontWeight:600,textTransform:"uppercase",borderRadius:20,letterSpacing:".04em"}}>{c.tipo}</span></div>
+                        </div>
+                      );})}
+                      {filtrados.length===0 && <div style={{padding:24,textAlign:"center",color:"#9ca3af",fontSize:13}}>Sin resultados.</div>}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -675,17 +810,17 @@ function AppPrincipal({ empresa, onLogout, onActualizarClientes }) {
                     </div>
                   ))}
                 </div>
-                <div style={{background:"#fff",border:"1px solid #e5e7eb",borderTop:"none",borderRadius:"0 0 8px 8px",padding:"24px 26px",boxShadow:"0 4px 14px rgba(0,0,0,.05)"}}>
+                <div style={{background:"#fff",border:"1px solid #e5e7eb",borderTop:"none",borderRadius:"0 0 8px 8px",padding:"24px 20px",boxShadow:"0 4px 14px rgba(0,0,0,.05)"}}>
                   <div style={{marginBottom:16,paddingBottom:14,borderBottom:"1px solid #f1f5f9"}}>
                     <div style={{fontSize:11,textTransform:"uppercase",color:C.secundario,marginBottom:5,fontWeight:600,letterSpacing:".08em"}}>Asunto</div>
                     <div style={{fontSize:16,color:"#111",fontWeight:700,lineHeight:1.4}}>{emails[tab].subject}</div>
                   </div>
-                  <pre style={{fontSize:14,color:"#374151",lineHeight:1.9,whiteSpace:"pre-wrap",fontFamily:"Georgia,serif",margin:0}}>{emails[tab].body}</pre>
+                  <pre className="email-pre">{emails[tab].body}</pre>
                   <div style={{marginTop:22,borderTop:"1px solid #f1f5f9",paddingTop:18}}>
-                    <div style={{display:"flex",gap:10,marginBottom:16}}>
-                      <button onClick={copiar} style={{background:"#fff",border:"1.5px solid #e5e7eb",color:C.primario,padding:"9px 18px",fontSize:12,fontWeight:600,borderRadius:6}}>{copied?"✓ Copiado":"Copiar email"}</button>
+                    <div className="email-actions">
+                      <button onClick={copiar} style={{background:"#fff",border:"1.5px solid #e5e7eb",color:C.primario,padding:"10px 18px",fontSize:12,fontWeight:600,borderRadius:6}}>{copied?"✓ Copiado":"Copiar email"}</button>
                       {(cliSel?.email||mEmail) && (
-                        <button onClick={()=>{const e=emails[tab];window.open("https://mail.google.com/mail/?view=cm&to="+encodeURIComponent(cliSel?.email||mEmail)+"&su="+encodeURIComponent(e.subject)+"&body="+encodeURIComponent(e.body),"_blank");}} style={{background:"#ea4335",color:"#fff",border:"none",padding:"9px 18px",fontSize:12,fontWeight:600,borderRadius:6}}>✉️ Abrir en Gmail</button>
+                        <button onClick={()=>{const e=emails[tab];window.open("https://mail.google.com/mail/?view=cm&to="+encodeURIComponent(cliSel?.email||mEmail)+"&su="+encodeURIComponent(e.subject)+"&body="+encodeURIComponent(e.body),"_blank");}} style={{background:"#ea4335",color:"#fff",border:"none",padding:"10px 18px",fontSize:12,fontWeight:600,borderRadius:6}}>✉️ Abrir en Gmail</button>
                       )}
                     </div>
                     <div style={{background:C.suave,border:"1px solid "+C.medio,padding:"18px 20px",borderRadius:8}}>
