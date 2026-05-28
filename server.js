@@ -8,17 +8,13 @@ const nodemailer = require("nodemailer");
 const Database   = require("better-sqlite3");
 const cron       = require("node-cron");
 const path       = require("path");
-const fs         = require("fs");
 
 const app  = express();
 const PORT = process.env.PORT || 3001;
 app.use(express.json());
 
 // ── BASE DE DATOS ─────────────────────────────────────────────────────────────
-// En Railway, usar /data para volumen persistente; localmente usar el directorio del proyecto
-const DB_DIR  = process.env.RAILWAY_ENVIRONMENT ? "/data" : __dirname;
-const DB_PATH = path.join(DB_DIR, "queue.db");
-if (!fs.existsSync(DB_DIR)) fs.mkdirSync(DB_DIR, { recursive: true });
+const DB_PATH = path.join(__dirname, "queue.db");
 const db = new Database(DB_PATH);
 db.exec(`
   CREATE TABLE IF NOT EXISTS email_queue (
