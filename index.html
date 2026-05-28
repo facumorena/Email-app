@@ -8,6 +8,61 @@
 <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
 <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
 <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<style>
+/* ── RESPONSIVE ─────────────────────────────────────────────────────── */
+.login-root { display:flex; min-height:100vh; font-family:'Inter',sans-serif; }
+.login-left  { flex:0 0 58%; }
+.login-right { flex:1; background:#f8fafc; display:flex; align-items:center; justify-content:center; padding:40px; }
+.app-sidebar { width:238px; background:#0f172a; display:flex; flex-direction:column; flex-shrink:0; position:sticky; top:0; height:100vh; overflow-y:auto; }
+.app-topbar  { display:none; }
+.sidebar-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,.55); z-index:199; }
+.grid-platforms { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; margin-bottom:26px; }
+.app-content-wrap { flex:1; overflow-y:auto; }
+.app-content-inner { max-width:880px; margin:0 auto; padding:36px 32px; }
+
+@media (max-width: 900px) {
+  /* LOGIN — solo mostrar el form */
+  .login-left { display:none !important; }
+  .login-right { padding:40px 28px !important; }
+
+  /* APP — sidebar como overlay lateral */
+  .app-sidebar {
+    position:fixed !important;
+    left:-260px !important;
+    top:0 !important;
+    height:100vh !important;
+    z-index:200 !important;
+    width:240px !important;
+    transition:left .25s ease !important;
+  }
+  .app-sidebar.sidebar-open { left:0 !important; }
+  .sidebar-overlay.sidebar-open { display:block !important; }
+
+  /* Topbar hamburger */
+  .app-topbar {
+    display:flex !important;
+    align-items:center;
+    gap:12px;
+    padding:13px 16px;
+    background:#fff;
+    border-bottom:1px solid #e5e7eb;
+    position:sticky;
+    top:0;
+    z-index:100;
+  }
+
+  /* Contenido */
+  .app-content-inner { padding:20px 16px !important; }
+
+  /* Grids */
+  .grid-platforms { grid-template-columns:1fr !important; }
+}
+
+@media (max-width: 480px) {
+  .login-right { padding:32px 20px !important; }
+  .app-content-inner { padding:16px 12px !important; }
+}
+</style>
 </head>
 <body style="margin:0;padding:0">
 <div id="root"></div>
@@ -161,7 +216,7 @@ function LoginScreen({ onLogin, empresas, onAgregarEmpresa }) {
   }
   const DI = {width:"100%",padding:"11px 14px",background:"rgba(255,255,255,.07)",border:"1.5px solid rgba(255,255,255,.13)",color:"#fff",fontSize:14,boxSizing:"border-box",fontFamily:"'Inter',sans-serif",borderRadius:8};
   return (
-    <div style={{display:"flex",minHeight:"100vh",fontFamily:"'Inter',sans-serif"}}>
+    <div className="login-root">
       <style>{`
         @keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
         @keyframes mIn{from{opacity:0;transform:scale(.96)}to{opacity:1;transform:scale(1)}}
@@ -174,7 +229,7 @@ function LoginScreen({ onLogin, empresas, onAgregarEmpresa }) {
       `}</style>
 
       {/* LEFT — branding */}
-      <div style={{flex:"0 0 58%",background:"linear-gradient(145deg,#0c1812 0%,#0f2018 40%,#0c1a1a 100%)",display:"flex",flexDirection:"column",justifyContent:"center",padding:"64px 72px",position:"relative",overflow:"hidden"}}>
+      <div className="login-left" style={{background:"linear-gradient(145deg,#0c1812 0%,#0f2018 40%,#0c1a1a 100%)",display:"flex",flexDirection:"column",justifyContent:"center",padding:"64px 72px",position:"relative",overflow:"hidden"}}>
         <div style={{position:"absolute",top:-120,right:-80,width:450,height:450,borderRadius:"50%",background:"radial-gradient(circle,rgba(82,183,136,.08) 0%,transparent 70%)",pointerEvents:"none"}}/>
         <div style={{position:"absolute",bottom:-100,left:-60,width:360,height:360,borderRadius:"50%",background:"radial-gradient(circle,rgba(52,211,153,.05) 0%,transparent 70%)",pointerEvents:"none"}}/>
         <div style={{position:"relative"}}>
@@ -208,7 +263,7 @@ function LoginScreen({ onLogin, empresas, onAgregarEmpresa }) {
       </div>
 
       {/* RIGHT — form */}
-      <div style={{flex:1,background:"#f8fafc",display:"flex",alignItems:"center",justifyContent:"center",padding:40}}>
+      <div className="login-right">
         <div className="fin" style={{width:"100%",maxWidth:370}}>
           <div style={{marginBottom:30}}>
             <h2 style={{margin:0,fontSize:26,fontWeight:800,color:"#0f172a",letterSpacing:"-.03em"}}>Bienvenido</h2>
@@ -307,6 +362,7 @@ function AppPrincipal({ empresa, onLogout, onActualizarClientes }) {
   const [platModal, setPlatModal] = useState(null);
   const [platUrl, setPlatUrl] = useState(""); const [platCopied, setPlatCopied] = useState(false);
   const [conectados, setConectados] = useState({});
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const WEBHOOK_URL = window.location.origin + "/api/cart-abandoned";
 
   useEffect(() => {
@@ -360,8 +416,11 @@ function AppPrincipal({ empresa, onLogout, onActualizarClientes }) {
         .plat-card{transition:all .2s}.plat-card:hover{transform:translateY(-3px);box-shadow:0 8px 28px rgba(0,0,0,.1)!important}
       `}</style>
 
+      {/* ─── SIDEBAR OVERLAY (mobile) ───────────────────────────── */}
+      <div className={"sidebar-overlay"+(sidebarOpen?" sidebar-open":"")} onClick={()=>setSidebarOpen(false)}/>
+
       {/* ─── SIDEBAR ─────────────────────────────────────────────── */}
-      <div style={{width:238,background:"#0f172a",display:"flex",flexDirection:"column",flexShrink:0,position:"sticky",top:0,height:"100vh",overflowY:"auto"}}>
+      <div className={"app-sidebar"+(sidebarOpen?" sidebar-open":"")}>
         <div style={{padding:"20px 18px 16px",borderBottom:"1px solid rgba(255,255,255,.07)"}}>
           <div style={{display:"flex",alignItems:"center",gap:10}}>
             <div style={{width:36,height:36,borderRadius:10,background:"linear-gradient(135deg,#52b788,#2d6a4f)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:17,flexShrink:0,boxShadow:"0 4px 14px rgba(82,183,136,.35)"}}>📧</div>
@@ -382,7 +441,7 @@ function AppPrincipal({ empresa, onLogout, onActualizarClientes }) {
             <div key={group.label} style={{marginBottom:4}}>
               <div style={{fontSize:9.5,fontWeight:700,color:"rgba(255,255,255,.22)",letterSpacing:".13em",textTransform:"uppercase",padding:"10px 8px 5px"}}>{group.label}</div>
               {group.items.map(({k,label,icon})=>(
-                <button key={k} className="nav-btn" onClick={()=>setVista(k)} style={{width:"100%",padding:"9px 10px",background:vista===k?"rgba(255,255,255,.13)":"transparent",border:"none",color:vista===k?"#fff":"rgba(255,255,255,.45)",fontFamily:"'Inter',sans-serif",fontWeight:vista===k?600:400,fontSize:13.5,textAlign:"left",display:"flex",alignItems:"center",gap:10,borderRadius:7,marginBottom:2,borderLeft:vista===k?"3px solid "+C.secundario:"3px solid transparent"}}>
+                <button key={k} className="nav-btn" onClick={()=>{setVista(k);setSidebarOpen(false);}} style={{width:"100%",padding:"9px 10px",background:vista===k?"rgba(255,255,255,.13)":"transparent",border:"none",color:vista===k?"#fff":"rgba(255,255,255,.45)",fontFamily:"'Inter',sans-serif",fontWeight:vista===k?600:400,fontSize:13.5,textAlign:"left",display:"flex",alignItems:"center",gap:10,borderRadius:7,marginBottom:2,borderLeft:vista===k?"3px solid "+C.secundario:"3px solid transparent"}}>
                   <span style={{fontSize:14}}>{icon}</span>{label}
                 </button>
               ))}
@@ -397,8 +456,21 @@ function AppPrincipal({ empresa, onLogout, onActualizarClientes }) {
       </div>
 
       {/* ─── CONTENT ─────────────────────────────────────────────── */}
-      <div style={{flex:1,overflowY:"auto"}}>
-        <div style={{maxWidth:880,margin:"0 auto",padding:"36px 32px"}}>
+      <div className="app-content-wrap">
+        {/* Topbar mobile */}
+        <div className="app-topbar">
+          <button onClick={()=>setSidebarOpen(true)} style={{background:"none",border:"none",padding:"6px 8px",borderRadius:7,display:"flex",flexDirection:"column",gap:4.5,cursor:"pointer"}}>
+            <span style={{display:"block",width:20,height:2,background:"#0f172a",borderRadius:2}}/>
+            <span style={{display:"block",width:20,height:2,background:"#0f172a",borderRadius:2}}/>
+            <span style={{display:"block",width:20,height:2,background:"#0f172a",borderRadius:2}}/>
+          </button>
+          <div style={{display:"flex",alignItems:"center",gap:8}}>
+            <div style={{width:28,height:28,borderRadius:8,background:"linear-gradient(135deg,#52b788,#2d6a4f)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:13}}>📧</div>
+            <span style={{fontWeight:800,fontSize:15,color:"#0f172a",letterSpacing:"-.02em"}}>Recartify</span>
+          </div>
+          <div style={{marginLeft:"auto",fontSize:13,color:"#64748b",fontWeight:500,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",maxWidth:140}}>{empresa.nombre}</div>
+        </div>
+        <div className="app-content-inner">
 
           {/* INTEGRACIONES */}
           {vista==="integraciones" && (
@@ -414,7 +486,7 @@ function AppPrincipal({ empresa, onLogout, onActualizarClientes }) {
                 </div>
                 <button onClick={()=>navigator.clipboard.writeText(WEBHOOK_URL)} style={{background:"rgba(52,211,153,.15)",border:"1px solid rgba(52,211,153,.3)",color:"#34d399",padding:"9px 18px",borderRadius:8,fontSize:12,fontWeight:700,fontFamily:"'Inter',sans-serif",flexShrink:0}}>Copiar →</button>
               </div>
-              <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:14,marginBottom:26}}>
+              <div className="grid-platforms">
                 {PLATFORMS.map(p=>(
                   <div key={p.id} className="plat-card" onClick={()=>{setPlatModal(p);setPlatUrl("");setPlatCopied(false);}} style={{background:"#fff",borderRadius:12,padding:"22px 20px",boxShadow:"0 1px 3px rgba(0,0,0,.06),0 4px 14px rgba(0,0,0,.06)",cursor:"pointer",border:"2px solid",borderColor:conectados[p.id]?"#86efac":"#f0f0f0",position:"relative"}}>
                     {conectados[p.id] && <div style={{position:"absolute",top:12,right:12,background:"#dcfce7",color:"#16a34a",fontSize:9.5,fontWeight:700,padding:"3px 9px",borderRadius:20,textTransform:"uppercase",letterSpacing:".05em"}}>Conectado ✓</div>}

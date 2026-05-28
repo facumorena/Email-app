@@ -14,7 +14,11 @@ const PORT = process.env.PORT || 3001;
 app.use(express.json());
 
 // ── BASE DE DATOS ─────────────────────────────────────────────────────────────
-const db = new Database(path.join(__dirname, "queue.db"));
+// En Railway, usar /data para volumen persistente; localmente usar el directorio del proyecto
+const DB_PATH = process.env.RAILWAY_ENVIRONMENT
+  ? "/data/queue.db"
+  : path.join(__dirname, "queue.db");
+const db = new Database(DB_PATH);
 db.exec(`
   CREATE TABLE IF NOT EXISTS email_queue (
     id             INTEGER PRIMARY KEY AUTOINCREMENT,
