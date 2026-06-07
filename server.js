@@ -116,11 +116,65 @@ async function processQueue() {
 }
 cron.schedule("* * * * *", processQueue);
 
+// ── NORMALIZAR PAYLOAD (Shopify, TiendaNube, genérico) ───────────────────────
+function normalizePayload(body, headers) {
+  // ── Shopify ──────────────────────────────────────────────────────────────
+  // Shopify envía X-Shopify-Shop-Domain en el header
+  const shopDomain = headers["x-shopify-shop-domain"] || "";
+  if (shopDomain || body.line_items) {
+    const customer   = body.customer || {};
+    const firstName  = customer.first_name || body.billing_address?.first_name || "";
+    const lastName   = customer.last_name  || body.billing_address?.last_name  || "";
+    const name       = (firstName + " " + lastName).trim() || "Cliente Shopify";
+    const email      = body.email || customer.email || "";
+    const city       = body.shipping_address?.city || body.billing_address?.city || "";
+    const products   = (body.line_items || [])
+      .map(i => i.title + (i.variant_title ? " - " + i.variant_title : "") + " x" + i.quantity)
+      .join(", ");
+    const orderValue = parseFloat(body.total_price || body.subtotal_price || 0);
+    return {
+      client_name:    name,
+      client_email:   email,
+      client_type:    "activo",
+      client_orders:  customer.orders_count || 1,
+      client_zona:    city,
+      client_rubro:   "",
+      products,
+      order_value:    orderValue,
+      company_nombre: process.env.COMPANY_NOMBRE || shopDomain || "Mi Tienda",
+      company_web:    process.env.COMPANY_WEB    || shopDomain || "",
+      company_desc:   process.env.COMPANY_DESC   || "tienda online",
+    };
+  }
+  // ── TiendaNube ──────────────────────────────────────────────────────────
+  // TiendaNube envía "contact" y "products"
+  if (body.contact && body.store_id) {
+    const contact  = body.contact || {};
+    const items    = (body.cart?.items || []).map(i => i.name + " x" + i.quantity).join(", ");
+    return {
+      client_name:    contact.name  || "Cliente TiendaNube",
+      client_email:   contact.email || "",
+      client_type:    "activo",
+      client_orders:  1,
+      client_zona:    contact.city || "",
+      client_rubro:   "",
+      products:       items,
+      order_value:    parseFloat(body.cart?.prices?.total || 0),
+      company_nombre: process.env.COMPANY_NOMBRE || "Mi Tienda",
+      company_web:    process.env.COMPANY_WEB    || "",
+      company_desc:   process.env.COMPANY_DESC   || "tienda online",
+    };
+  }
+  // ── Formato nativo Recartify (ya tiene todos los campos) ─────────────────
+  return body;
+}
+
 // ── API ───────────────────────────────────────────────────────────────────────
 app.post("/api/cart-abandoned", (req, res) => {
+  const normalized = normalizePayload(req.body, req.headers);
   const { client_name, client_email, client_type="activo", client_orders=1,
           client_zona="", client_rubro="", products="", order_value=0,
-          company_nombre, company_web, company_desc="" } = req.body;
+          company_nombre, company_web, company_desc="" } = normalized;
   if (!client_name || !client_email || !company_nombre || !company_web)
     return res.status(400).json({ error: "Faltan campos: client_name, client_email, company_nombre, company_web" });
   const abandoned_at = Math.floor(Date.now() / 1000);

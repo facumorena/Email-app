@@ -850,7 +850,25 @@ function AppPrincipal({ empresa, onLogout, onActualizarClientes }) {
 
 function App() {
   const [empresa, setEmpresa] = useState(null);
-  const [empresas, setEmpresas] = useState(EMPRESAS_BASE);
+  const [empresas, setEmpresas] = useState(() => {
+    try {
+      const saved = localStorage.getItem("recartify_empresas");
+      return saved ? { ...EMPRESAS_BASE, ...JSON.parse(saved) } : EMPRESAS_BASE;
+    } catch(e) { return EMPRESAS_BASE; }
+  });
+
+  useEffect(() => {
+    try {
+      // Guardar solo las empresas que no son las base (las creadas por el usuario)
+      const extras = {};
+      Object.entries(empresas).forEach(([k, v]) => {
+        if (!EMPRESAS_BASE[k]) extras[k] = v;
+        else extras[k] = v; // también guardar cambios en empresas base (ej: clientes nuevos)
+      });
+      localStorage.setItem("recartify_empresas", JSON.stringify(extras));
+    } catch(e) {}
+  }, [empresas]);
+
   function agregarEmpresa(nueva){setEmpresas(prev=>({...prev,[nueva.id]:nueva}));}
   function actualizarClientes(empId,nuevos){setEmpresas(prev=>({...prev,[empId]:{...prev[empId],clientes:nuevos}}));if(empresa?.id===empId)setEmpresa(prev=>({...prev,clientes:nuevos}));}
   return empresa
