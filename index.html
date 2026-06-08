@@ -204,7 +204,7 @@ function generarEmails(empresa, cliente, manual) {
 }
 
 /* ─── LOGIN ─────────────────────────────────────────────────────────── */
-function LoginScreen({ onLogin, empresas, onAgregarEmpresa }) {
+function LoginScreen({ onLogin, empresas, onAgregarEmpresa, onEliminarEmpresa }) {
   const lista = Object.values(empresas);
   const [selId, setSelId] = useState(lista[0]?.id || "");
   const [pass, setPass] = useState("");
@@ -293,10 +293,13 @@ function LoginScreen({ onLogin, empresas, onAgregarEmpresa }) {
             </div>
             <div style={{display:"flex",flexWrap:"wrap",gap:8}}>
               {lista.map(e=>(
-                <button key={e.id} className="ebtn" onClick={()=>cambiar(e.id)} style={{flex:"1 1 calc(50% - 4px)",minWidth:0,padding:"13px 10px",border:"2px solid",borderColor:selId===e.id?"#52b788":"#e5e7eb",background:selId===e.id?"#f0fff4":"#fff",color:selId===e.id?"#2d6a4f":"#374151",fontSize:12,fontFamily:"'Inter',sans-serif",borderRadius:10,fontWeight:selId===e.id?700:400,boxShadow:selId===e.id?"0 0 0 3px rgba(82,183,136,.12)":"0 1px 3px rgba(0,0,0,.05)"}}>
-                  <div style={{fontSize:22,marginBottom:5}}>{e.emoji}</div>
-                  <div style={{overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{e.nombre}</div>
-                </button>
+                <div key={e.id} style={{flex:"1 1 calc(50% - 4px)",minWidth:0,position:"relative"}}>
+                  <button className="ebtn" onClick={()=>cambiar(e.id)} style={{width:"100%",padding:"13px 10px",border:"2px solid",borderColor:selId===e.id?"#52b788":"#e5e7eb",background:selId===e.id?"#f0fff4":"#fff",color:selId===e.id?"#2d6a4f":"#374151",fontSize:12,fontFamily:"'Inter',sans-serif",borderRadius:10,fontWeight:selId===e.id?700:400,boxShadow:selId===e.id?"0 0 0 3px rgba(82,183,136,.12)":"0 1px 3px rgba(0,0,0,.05)"}}>
+                    <div style={{fontSize:22,marginBottom:5}}>{e.emoji}</div>
+                    <div style={{overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{e.nombre}</div>
+                  </button>
+                  <button onClick={ev=>{ev.stopPropagation();if(window.confirm("¿Eliminar "+e.nombre+"?"))onEliminarEmpresa(e.id);}} style={{position:"absolute",top:5,right:5,width:20,height:20,background:"rgba(220,38,38,.12)",border:"none",borderRadius:4,color:"#dc2626",fontSize:11,display:"flex",alignItems:"center",justifyContent:"center",lineHeight:1}}>✕</button>
+                </div>
               ))}
             </div>
           </div>
@@ -887,10 +890,11 @@ function App() {
   }, [empresas]);
 
   function agregarEmpresa(nueva){setEmpresas(prev=>({...prev,[nueva.id]:nueva}));}
+  function eliminarEmpresa(id){setEmpresas(prev=>{const n={...prev};delete n[id];return n;});}
   function actualizarClientes(empId,nuevos){setEmpresas(prev=>({...prev,[empId]:{...prev[empId],clientes:nuevos}}));if(empresa?.id===empId)setEmpresa(prev=>({...prev,clientes:nuevos}));}
   return empresa
     ?<AppPrincipal empresa={empresa} onLogout={()=>setEmpresa(null)} onActualizarClientes={actualizarClientes}/>
-    :<LoginScreen onLogin={setEmpresa} empresas={empresas} onAgregarEmpresa={agregarEmpresa}/>;
+    :<LoginScreen onLogin={setEmpresa} empresas={empresas} onAgregarEmpresa={agregarEmpresa} onEliminarEmpresa={eliminarEmpresa}/>;
 }
 
 ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
