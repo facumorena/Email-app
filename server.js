@@ -8,6 +8,7 @@ const nodemailer = require("nodemailer");
 const Database   = require("better-sqlite3");
 const cron       = require("node-cron");
 const path       = require("path");
+const https      = require("https");
 
 const app  = express();
 const PORT = process.env.PORT || 3001;
@@ -47,6 +48,21 @@ db.exec(`
 ["order_value REAL DEFAULT 0","recovered_at INTEGER","recovered INTEGER DEFAULT 0"].forEach(col => {
   try { db.exec("ALTER TABLE email_queue ADD COLUMN " + col); } catch(e) {}
 });
+
+// ── TABLA INTEGRACIONES ───────────────────────────────────────────────────────
+db.exec(`
+  CREATE TABLE IF NOT EXISTS integrations (
+    id             INTEGER PRIMARY KEY AUTOINCREMENT,
+    platform       TEXT NOT NULL,
+    store_domain   TEXT NOT NULL,
+    access_token   TEXT NOT NULL,
+    company_nombre TEXT NOT NULL,
+    company_web    TEXT NOT NULL,
+    company_desc   TEXT DEFAULT '',
+    last_check_id  INTEGER DEFAULT 0,
+    created_at     INTEGER DEFAULT (strftime('%s','now'))
+  )
+`);
 
 // ── TEMPLATES ────────────────────────────────────────────────────────────────
 function buildEmails(emp, web, desc, nombre, rubro, zona, tipo, pedidos, products) {
@@ -116,6 +132,70 @@ async function processQueue() {
 }
 cron.schedule("* * * * *", processQueue);
 
+// ── SHOPIFY POLLING (cada 30 min) ────────────────────────────────────────────
+function shopifyGet(domain, token, path) {
+  return new Promise((resolve, reject) => {
+    const options = {
+      hostname: domain,
+      path,
+      method: "GET",
+      headers: { "X-Shopify-Access-Token": token, "Content-Type": "application/json" }
+    };
+    const req = https.request(options, res => {
+      let data = "";
+      res.on("data", chunk => data += chunk);
+      res.on("end", () => {
+        try { resolve(JSON.parse(data)); } catch(e) { reject(e); }
+      });
+    });
+    req.on("error", reject);
+    req.end();
+  });
+}
+
+async function pollShopify() {
+  const integrations = db.prepare("SELECT * FROM integrations WHERE platform='shopify'").all();
+  for (const intg of integrations) {
+    try {
+      const sinceId = intg.last_check_id || 0;
+      const data = await shopifyGet(
+        intg.store_domain,
+        intg.access_token,
+        `/admin/api/2024-04/checkouts.json?limit=50&since_id=${sinceId}`
+      );
+      const checkouts = data.checkouts || [];
+      let maxId = sinceId;
+      for (const c of checkouts) {
+        if (c.completed_at) continue; // ya completó la compra, skip
+        if (!c.email) continue;       // sin email, skip
+        const nombre = (c.billing_address?.first_name || c.shipping_address?.first_name || "Cliente") + " " +
+                       (c.billing_address?.last_name  || c.shipping_address?.last_name  || "");
+        const products = (c.line_items || []).map(i => i.title + " x" + i.quantity).join(", ");
+        const orderValue = parseFloat(c.total_price || 0);
+        const city = c.shipping_address?.city || c.billing_address?.city || "";
+        // Evitar duplicados
+        const exists = db.prepare("SELECT id FROM email_queue WHERE client_email=? AND company_nombre=? AND recovered=0 AND email_1_sent=0").get(c.email, intg.company_nombre);
+        if (!exists) {
+          db.prepare("INSERT INTO email_queue (client_name,client_email,client_type,client_orders,client_zona,client_rubro,products,order_value,company_nombre,company_web,company_desc,abandoned_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)").run(
+            nombre.trim(), c.email, "activo", 1, city, "", products, orderValue,
+            intg.company_nombre, intg.company_web, intg.company_desc,
+            Math.floor(Date.now()/1000)
+          );
+          console.log("🛒 Shopify carrito: " + nombre.trim() + " <" + c.email + ">");
+        }
+        if (c.id > maxId) maxId = c.id;
+      }
+      if (maxId > sinceId) {
+        db.prepare("UPDATE integrations SET last_check_id=? WHERE id=?").run(maxId, intg.id);
+      }
+      console.log("✓ Shopify poll " + intg.store_domain + ": " + checkouts.length + " checkouts");
+    } catch(e) {
+      console.error("✗ Shopify poll error (" + intg.store_domain + "): " + e.message);
+    }
+  }
+}
+cron.schedule("*/30 * * * *", pollShopify); // cada 30 minutos
+
 // ── NORMALIZAR PAYLOAD (Shopify, TiendaNube, genérico) ───────────────────────
 function normalizePayload(body, headers) {
   // ── Shopify ──────────────────────────────────────────────────────────────
@@ -168,6 +248,45 @@ function normalizePayload(body, headers) {
   // ── Formato nativo Recartify (ya tiene todos los campos) ─────────────────
   return body;
 }
+
+// ── API INTEGRACIONES ─────────────────────────────────────────────────────────
+app.get("/api/integrations", (_req, res) => {
+  const rows = db.prepare("SELECT id,platform,store_domain,company_nombre,company_web,created_at FROM integrations").all();
+  res.json(rows);
+});
+
+app.post("/api/integrations", async (req, res) => {
+  const { platform, store_domain, access_token, company_nombre, company_web, company_desc="" } = req.body;
+  if (!platform || !store_domain || !access_token || !company_nombre || !company_web)
+    return res.status(400).json({ error: "Faltan campos requeridos" });
+
+  // Verificar que el token funciona
+  try {
+    if (platform === "shopify") {
+      const domain = store_domain.includes(".myshopify.com") ? store_domain : store_domain + ".myshopify.com";
+      const test = await shopifyGet(domain, access_token, "/admin/api/2024-04/shop.json");
+      if (!test.shop) return res.status(401).json({ error: "Token inválido o tienda incorrecta" });
+      // Guardar o actualizar
+      const exists = db.prepare("SELECT id FROM integrations WHERE platform=? AND store_domain=?").get(platform, domain);
+      if (exists) {
+        db.prepare("UPDATE integrations SET access_token=?,company_nombre=?,company_web=?,company_desc=? WHERE id=?").run(access_token, company_nombre, company_web, company_desc, exists.id);
+      } else {
+        db.prepare("INSERT INTO integrations (platform,store_domain,access_token,company_nombre,company_web,company_desc) VALUES (?,?,?,?,?,?)").run(platform, domain, access_token, company_nombre, company_web, company_desc);
+      }
+      // Primer poll inmediato
+      pollShopify();
+      return res.json({ ok: true, shop: test.shop.name, domain });
+    }
+    res.status(400).json({ error: "Plataforma no soportada aún" });
+  } catch(e) {
+    res.status(500).json({ error: "Error conectando: " + e.message });
+  }
+});
+
+app.delete("/api/integrations/:id", (req, res) => {
+  db.prepare("DELETE FROM integrations WHERE id=?").run(req.params.id);
+  res.json({ ok: true });
+});
 
 // ── API ───────────────────────────────────────────────────────────────────────
 app.post("/api/cart-abandoned", (req, res) => {

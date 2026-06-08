@@ -381,6 +381,8 @@ function AppPrincipal({ empresa, onLogout, onActualizarClientes }) {
   const [cErr, setCErr] = useState(""); const [cOk, setCOk] = useState("");
   const [platModal, setPlatModal] = useState(null);
   const [platUrl, setPlatUrl] = useState(""); const [platCopied, setPlatCopied] = useState(false);
+  const [platToken, setPlatToken] = useState(""); const [platLoad, setPlatLoad] = useState(false);
+  const [platOk, setPlatOk] = useState(""); const [platErr, setPlatErr] = useState("");
   const [conectados, setConectados] = useState({});
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const WEBHOOK_URL = window.location.origin + "/api/cart-abandoned";
@@ -533,7 +535,7 @@ function AppPrincipal({ empresa, onLogout, onActualizarClientes }) {
 
           {/* MODAL INTEGRACIÓN */}
           {platModal && (
-            <div onClick={()=>setPlatModal(null)} style={{position:"fixed",inset:0,background:"rgba(0,0,0,.6)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:1000,padding:20}}>
+            <div onClick={()=>{setPlatModal(null);setPlatOk("");setPlatErr("");}} style={{position:"fixed",inset:0,background:"rgba(0,0,0,.6)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:1000,padding:20}}>
               <div onClick={e=>e.stopPropagation()} style={{background:"#fff",borderRadius:16,width:"100%",maxWidth:500,boxShadow:"0 24px 80px rgba(0,0,0,.2)",overflow:"hidden",animation:"mIn .25s cubic-bezier(.16,1,.3,1)"}}>
                 <div style={{background:platModal.bg,padding:"22px 24px",display:"flex",alignItems:"center",gap:13,borderBottom:"1px solid "+platModal.color+"20"}}>
                   <div style={{width:44,height:44,borderRadius:11,background:"#fff",display:"flex",alignItems:"center",justifyContent:"center",fontSize:22,boxShadow:"0 2px 8px rgba(0,0,0,.1)"}}>{platModal.emoji}</div>
@@ -541,46 +543,71 @@ function AppPrincipal({ empresa, onLogout, onActualizarClientes }) {
                     <div style={{fontSize:16,fontWeight:800,color:"#0f172a"}}>Conectar {platModal.nombre}</div>
                     <div style={{fontSize:12,color:"#64748b",marginTop:2}}>{platModal.tagline}</div>
                   </div>
-                  <button onClick={()=>setPlatModal(null)} style={{background:"rgba(0,0,0,.07)",border:"none",width:30,height:30,borderRadius:7,fontSize:15,color:"#374151",display:"flex",alignItems:"center",justifyContent:"center"}}>✕</button>
+                  <button onClick={()=>{setPlatModal(null);setPlatOk("");setPlatErr("");}} style={{background:"rgba(0,0,0,.07)",border:"none",width:30,height:30,borderRadius:7,fontSize:15,color:"#374151",display:"flex",alignItems:"center",justifyContent:"center"}}>✕</button>
                 </div>
                 <div style={{padding:"24px"}}>
-                  <div style={{marginBottom:20}}>
-                    <div style={{display:"flex",alignItems:"center",gap:9,marginBottom:10}}>
-                      <div style={{width:22,height:22,borderRadius:"50%",background:platModal.color,color:"#fff",fontSize:11,fontWeight:800,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>1</div>
-                      <span style={{fontSize:13,fontWeight:700,color:"#0f172a"}}>URL de tu tienda</span>
+                  {platModal.id === "shopify" ? (
+                    /* ── SHOPIFY: conexión real por API ── */
+                    <div>
+                      <div style={{background:"#f0fdf4",border:"1px solid #86efac",borderRadius:10,padding:"12px 16px",marginBottom:20,fontSize:13,color:"#166534",lineHeight:1.6}}>
+                        🔗 Conexión directa — Recartify revisa tus carritos abandonados automáticamente cada 30 minutos.
+                      </div>
+                      <div style={{marginBottom:16}}>
+                        <label style={{fontSize:12,fontWeight:700,color:"#374151",textTransform:"uppercase",letterSpacing:".06em",display:"block",marginBottom:7}}>Dominio de tu tienda</label>
+                        <input value={platUrl} onChange={e=>setPlatUrl(e.target.value)} placeholder="tu-tienda.myshopify.com" style={{...IS}}/>
+                        <div style={{fontSize:11,color:"#9ca3af",marginTop:4}}>Encontralo en Shopify Admin → Configuración → Dominio</div>
+                      </div>
+                      <div style={{marginBottom:20}}>
+                        <label style={{fontSize:12,fontWeight:700,color:"#374151",textTransform:"uppercase",letterSpacing:".06em",display:"block",marginBottom:7}}>Token de acceso API</label>
+                        <input type="password" value={platToken} onChange={e=>setPlatToken(e.target.value)} placeholder="shpat_xxxxxxxxxxxxxxxxxxxxxxxx" style={{...IS}}/>
+                        <div style={{fontSize:11,color:"#9ca3af",marginTop:4}}>Configuración → Apps → Desarrollar apps → tu app → Token de acceso</div>
+                      </div>
+                      {platErr && <div style={{background:"#fef2f2",border:"1px solid #fca5a5",borderRadius:8,padding:"10px 14px",marginBottom:14,fontSize:13,color:"#dc2626"}}>⚠ {platErr}</div>}
+                      {platOk  && <div style={{background:"#f0fdf4",border:"1px solid #86efac",borderRadius:8,padding:"10px 14px",marginBottom:14,fontSize:13,color:"#16a34a"}}>✓ {platOk}</div>}
+                      <div style={{display:"flex",gap:10}}>
+                        <button onClick={()=>{setPlatModal(null);setPlatOk("");setPlatErr("");}} style={{flex:1,padding:"12px",background:"#f1f5f9",border:"none",color:"#374151",fontSize:13,fontWeight:600,borderRadius:8,fontFamily:"'Inter',sans-serif"}}>Cancelar</button>
+                        <button disabled={platLoad} onClick={async()=>{
+                          if(!platUrl.trim()||!platToken.trim()){setPlatErr("Completá el dominio y el token.");return;}
+                          setPlatLoad(true);setPlatErr("");setPlatOk("");
+                          try{
+                            const r=await fetch("/api/integrations",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({platform:"shopify",store_domain:platUrl.trim(),access_token:platToken.trim(),company_nombre:empresa.nombre,company_web:empresa.web,company_desc:empresa.descripcion})});
+                            const d=await r.json();
+                            if(d.ok){setPlatOk("¡Conectado! Tienda: "+d.shop+". Los carritos se sincronizarán en los próximos 30 min.");setConectados(prev=>({...prev,shopify:true}));}
+                            else setPlatErr(d.error||"Error al conectar");
+                          }catch(e){setPlatErr("Error de conexión");}
+                          setPlatLoad(false);
+                        }} style={{flex:2,padding:"12px",background:platLoad?"#9ca3af":"#5c9e31",border:"none",color:"#fff",fontSize:13,fontWeight:800,borderRadius:8,fontFamily:"'Inter',sans-serif"}}>
+                          {platLoad?"Conectando...":"Conectar Shopify →"}
+                        </button>
+                      </div>
                     </div>
-                    <input value={platUrl} onChange={e=>setPlatUrl(e.target.value)} placeholder={"Ej: mi-tienda."+platModal.id+".com"} style={{...IS}}/>
-                  </div>
-                  <div style={{marginBottom:20}}>
-                    <div style={{display:"flex",alignItems:"center",gap:9,marginBottom:10}}>
-                      <div style={{width:22,height:22,borderRadius:"50%",background:platModal.color,color:"#fff",fontSize:11,fontWeight:800,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>2</div>
-                      <span style={{fontSize:13,fontWeight:700,color:"#0f172a"}}>Copiá tu webhook URL</span>
-                    </div>
-                    <div style={{background:"#f8fafc",border:"1.5px solid #e5e7eb",borderRadius:8,padding:"11px 14px",display:"flex",alignItems:"center",gap:10}}>
-                      <code style={{flex:1,fontSize:11.5,color:"#374151",fontFamily:"monospace",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{WEBHOOK_URL}</code>
-                      <button onClick={()=>{navigator.clipboard.writeText(WEBHOOK_URL);setPlatCopied(true);setTimeout(()=>setPlatCopied(false),2000);}} style={{background:platCopied?"#dcfce7":platModal.color,color:platCopied?"#16a34a":"#fff",border:"none",padding:"7px 14px",borderRadius:6,fontSize:11,fontWeight:700,fontFamily:"'Inter',sans-serif",flexShrink:0}}>
-                        {platCopied?"✓ Copiado":"Copiar"}
-                      </button>
-                    </div>
-                  </div>
-                  <div style={{marginBottom:24}}>
-                    <div style={{display:"flex",alignItems:"center",gap:9,marginBottom:10}}>
-                      <div style={{width:22,height:22,borderRadius:"50%",background:platModal.color,color:"#fff",fontSize:11,fontWeight:800,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>3</div>
-                      <span style={{fontSize:13,fontWeight:700,color:"#0f172a"}}>Configuralo en {platModal.nombre}</span>
-                    </div>
-                    <div style={{background:"#f8fafc",borderRadius:10,padding:"14px 16px"}}>
-                      {platModal.pasos.map((p,i)=>(
-                        <div key={i} style={{display:"flex",gap:10,marginBottom:i<platModal.pasos.length-1?10:0}}>
-                          <div style={{width:18,height:18,borderRadius:"50%",background:platModal.color+"20",color:platModal.color,fontSize:10,fontWeight:700,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,marginTop:2}}>{i+1}</div>
-                          <div style={{fontSize:13,color:"#374151",lineHeight:1.55}}>{p}</div>
+                  ) : (
+                    /* ── OTRAS PLATAFORMAS: webhook ── */
+                    <div>
+                      <div style={{marginBottom:20}}>
+                        <div style={{fontSize:12,fontWeight:700,color:"#374151",textTransform:"uppercase",letterSpacing:".06em",marginBottom:8}}>Tu URL de webhook</div>
+                        <div style={{background:"#f8fafc",border:"1.5px solid #e5e7eb",borderRadius:8,padding:"11px 14px",display:"flex",alignItems:"center",gap:10}}>
+                          <code style={{flex:1,fontSize:11.5,color:"#374151",fontFamily:"monospace",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{WEBHOOK_URL}</code>
+                          <button onClick={()=>{navigator.clipboard.writeText(WEBHOOK_URL);setPlatCopied(true);setTimeout(()=>setPlatCopied(false),2000);}} style={{background:platCopied?"#dcfce7":platModal.color,color:platCopied?"#16a34a":"#fff",border:"none",padding:"7px 14px",borderRadius:6,fontSize:11,fontWeight:700,fontFamily:"'Inter',sans-serif",flexShrink:0}}>
+                            {platCopied?"✓ Copiado":"Copiar"}
+                          </button>
                         </div>
-                      ))}
+                      </div>
+                      <div style={{marginBottom:24,background:"#f8fafc",borderRadius:10,padding:"14px 16px"}}>
+                        <div style={{fontSize:12,fontWeight:700,color:"#374151",marginBottom:10}}>Pasos en {platModal.nombre}:</div>
+                        {platModal.pasos.map((p,i)=>(
+                          <div key={i} style={{display:"flex",gap:10,marginBottom:i<platModal.pasos.length-1?10:0}}>
+                            <div style={{width:18,height:18,borderRadius:"50%",background:platModal.color+"20",color:platModal.color,fontSize:10,fontWeight:700,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,marginTop:2}}>{i+1}</div>
+                            <div style={{fontSize:13,color:"#374151",lineHeight:1.55}}>{p}</div>
+                          </div>
+                        ))}
+                      </div>
+                      <div style={{display:"flex",gap:10}}>
+                        <button onClick={()=>setPlatModal(null)} style={{flex:1,padding:"12px",background:"#f1f5f9",border:"none",color:"#374151",fontSize:13,fontWeight:600,borderRadius:8,fontFamily:"'Inter',sans-serif"}}>Cancelar</button>
+                        <button onClick={()=>{setConectados(prev=>({...prev,[platModal.id]:true}));setPlatModal(null);}} style={{flex:2,padding:"12px",background:platModal.color,border:"none",color:"#fff",fontSize:13,fontWeight:800,borderRadius:8,fontFamily:"'Inter',sans-serif"}}>✓ Listo, ya lo configuré</button>
+                      </div>
                     </div>
-                  </div>
-                  <div style={{display:"flex",gap:10}}>
-                    <button onClick={()=>setPlatModal(null)} style={{flex:1,padding:"12px",background:"#f1f5f9",border:"none",color:"#374151",fontSize:13,fontWeight:600,borderRadius:8,fontFamily:"'Inter',sans-serif"}}>Cancelar</button>
-                    <button onClick={()=>{setConectados(prev=>({...prev,[platModal.id]:true}));setPlatModal(null);}} style={{flex:2,padding:"12px",background:platModal.color,border:"none",color:"#fff",fontSize:13,fontWeight:800,borderRadius:8,fontFamily:"'Inter',sans-serif",boxShadow:"0 4px 16px "+platModal.color+"44"}}>✓ Marcar como conectado</button>
-                  </div>
+                  )}
                 </div>
               </div>
             </div>
