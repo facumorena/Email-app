@@ -65,14 +65,15 @@
 </style>
 </head>
 <body style="margin:0;padding:0">
-<div id="root"></div>
+<div id="root"><div id="fb" style="font-family:sans-serif;padding:40px;color:#374151">Cargando Recartify...</div></div>
 <script>
-// ── DATOS GLOBALES (sin JSX — Babel no procesa esto) ─────────────────────────
-const { useState, useEffect } = React;
-const NL = String.fromCharCode(10);
-const NN = NL + NL;
-
-const EMPRESAS_BASE = {
+window.onerror = function(msg, src, line, col, err) {
+  document.getElementById("fb").innerHTML = "<b style='color:red'>Error JS:</b><br>" + msg + "<br><small>" + (src||"") + " línea " + line + "</small>";
+};
+</script>
+<script>
+// Datos globales (sin JSX — fuera del compilador Babel)
+var EMPRESAS_BASE = {
   ecopack: {
     id:"ecopack", nombre:"EcoPack Uruguay", password:"eco2024",
     web:"ecopackuy.com", descripcion:"packaging ecológico para tu negocio",
@@ -275,6 +276,10 @@ const EMPRESAS_BASE = {
 </script>
 
 <script type="text/babel">
+const { useState, useEffect } = React;
+const NL = String.fromCharCode(10);
+const NN = NL + NL;
+
 const PALETAS = [
   { primario:"#2d6a4f", secundario:"#52b788", fondo:"#f0fdf4", suave:"#d8f3dc", medio:"#a7f3c0" },
   { primario:"#1e3a5f", secundario:"#3b82f6", fondo:"#eff6ff", suave:"#dbeafe", medio:"#93c5fd" },
